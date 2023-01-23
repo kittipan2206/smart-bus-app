@@ -6,7 +6,7 @@ import 'main.dart';
 // firebase auth
 import 'package:firebase_auth/firebase_auth.dart';
 // flutter toast
-import 'package:fluttertoast/fluttertoast.dart';
+// import 'package:fluttertoast/fluttertoast.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -103,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                                             )));
                               });
                             } on FirebaseAuthException catch (e) {
-                              Fluttertoast.showToast(msg: e.message.toString());
+                              // Fluttertoast.showToast(msg: e.message.toString());
                             }
                           }
                         },

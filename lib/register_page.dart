@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 // firebase auth
 import 'package:firebase_auth/firebase_auth.dart';
 // flutter toast
-import 'package:fluttertoast/fluttertoast.dart';
+// import 'package:fluttertoast/fluttertoast.dart';
 import 'package:smart_bus/main.dart';
 
 import 'login_page.dart';
@@ -142,29 +142,29 @@ class _RegisterPageState extends State<RegisterPage> {
                               value.user!
                                   .updateDisplayName(nameController.text);
                               // show toast
-                              Fluttertoast.showToast(
-                                  msg: 'Register success',
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.green,
-                                  textColor: Colors.white,
-                                  fontSize: 16.0);
-                              // navigate to login page
+                              // Fluttertoast.showToast(
+                              //     msg: 'Register success',
+                              //     toastLength: Toast.LENGTH_SHORT,
+                              //     gravity: ToastGravity.BOTTOM,
+                              //     timeInSecForIosWeb: 1,
+                              //     backgroundColor: Colors.green,
+                              //     textColor: Colors.white,
+                              //     fontSize: 16.0);
+                              // // navigate to login page
                               Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => const LoginPage()));
                             }).catchError((error) {
                               // show toast
-                              Fluttertoast.showToast(
-                                  msg: error.toString(),
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.red,
-                                  textColor: Colors.white,
-                                  fontSize: 16.0);
+                              // Fluttertoast.showToast(
+                              //     msg: error.toString(),
+                              //     toastLength: Toast.LENGTH_SHORT,
+                              //     gravity: ToastGravity.BOTTOM,
+                              //     timeInSecForIosWeb: 1,
+                              //     backgroundColor: Colors.red,
+                              //     textColor: Colors.white,
+                              //     fontSize: 16.0);
                             });
                           }
                         },

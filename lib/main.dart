@@ -4,15 +4,13 @@ import 'dart:developer';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+// import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'busModel.dart';
 import 'login_page.dart';
 // google map package
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-// geolocator package
-import 'package:geolocator/geolocator.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -35,6 +33,9 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
           elevation: 1,
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Colors.green,
         ),
         primarySwatch: Colors.blue,
       ),
@@ -81,9 +82,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     checkLogin();
-    Fluttertoast.showToast(msg: 'Getting Current Location');
+    // Fluttertoast.showToast(msg: 'Getting Current Location');
     getCurrentLocation().then((value) {
-      Fluttertoast.showToast(msg: 'Get Current Location Success');
+      // Fluttertoast.showToast(msg: 'Get Current Location Success');
     });
 
     setCustomMarker();
@@ -93,10 +94,6 @@ class _MyHomePageState extends State<MyHomePage> {
   streamBusLocation() async {
     FirebaseFirestore.instance.collection('bus_data').get().then((value) {
       value.docs.forEach((element) {
-        // // get geo point
-        // GeoPoint geoPoint = element['location'];
-        // print('${element.id}${geoPoint.latitude}, ${geoPoint.longitude}');
-        // listen to bus location
         FirebaseFirestore.instance
             .collection('bus_data')
             .doc(element.id)
@@ -107,29 +104,49 @@ class _MyHomePageState extends State<MyHomePage> {
           // update bus location
           final latLng = LatLng(geoPoint.latitude, geoPoint.longitude);
           dynamic gDistanceApi = await getDistance(busLatLng: latLng);
-          // print(distanceObj);
+          print(gDistanceApi);
           try {
             String distance =
                 gDistanceApi['rows'][0]['elements'][0]['distance']['text'];
             String duration =
                 gDistanceApi['rows'][0]['elements'][0]['duration']['text'];
+            int distanceValue =
+                gDistanceApi['rows'][0]['elements'][0]['distance']['value'];
+            String originAddress =
+                gDistanceApi['origin_addresses'][0].toString();
 
             print('distance: $distance');
             print('duration: $duration');
-            busList.add(Bus(
-              id: element.id,
-              name: element['name'],
-              location: geoPoint,
-              distance: distance,
-              duration: duration,
-            ));
-            print('list' + busList.length.toString());
+
+            // busList.add(Bus(
+            //   id: element.id,
+            //   name: element['name'],
+            //   location: geoPoint,
+            //   distance: distance,
+            //   duration: duration,
+            // ));
+            // print('list' + busList.length.toString());
+
             setState(() {
-              // _markers.removeWhere((element) => element.markerId.value == 'bus');
               addBusMarker(
                   element.id, latLng, element['name'], distance, duration);
+              busList.removeWhere((element) => element.id == event.id);
+              busList.add(Bus(
+                id: event.id,
+                name: event['name'],
+                location: geoPoint,
+                distance: distance,
+                duration: duration,
+                distanceInMeters: distanceValue,
+                address: originAddress,
+              ));
+              // sort bus list by distance
+              busList.sort((a, b) {
+                return a.distanceInMeters.compareTo(b.distanceInMeters);
+              });
             });
           } catch (e) {
+            // Fluttertoast.showToast(msg: 'Error: $e');
             print(e);
           }
         });
@@ -167,6 +184,9 @@ class _MyHomePageState extends State<MyHomePage> {
         return;
       }
     }
+    // filter location
+    location.changeSettings(
+        accuracy: LocationAccuracy.high, interval: 3000, distanceFilter: 1);
 
     location.onLocationChanged.listen((LocationData currentLocation) {
       // Use current location
@@ -189,7 +209,7 @@ class _MyHomePageState extends State<MyHomePage> {
       options: DefaultFirebaseOptions.currentPlatform,
     ).then((value) {
       streamBusLocation();
-    }).catchError((e) => Fluttertoast.showToast(msg: e.toString()));
+    });
     _isLogin = (prefs!.getBool('isLogin') ?? false);
     // if (!_isLogin) {
     //   Navigator.push(
@@ -201,6 +221,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   TextEditingController _searchController = TextEditingController();
   bool _isSearch = false;
+  bool _isShowAll = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -221,7 +242,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () async {
                 await FirebaseAuth.instance.signOut();
                 prefs!.setBool('isLogin', false);
-                Fluttertoast.showToast(msg: 'Logout');
+                // Fluttertoast.showToast(msg: 'Logout');
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => const LoginPage()));
               },
@@ -233,7 +254,9 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             FutureBuilder(builder: (context, snapshot) {
               return GoogleMap(
-                mapType: MapType.normal,
+                // mapType: MapType.normal,
+                trafficEnabled: true,
+                padding: const EdgeInsets.only(top: 70),
                 initialCameraPosition: _currentLocationCam,
                 onMapCreated: (GoogleMapController controller) {
                   _controller.complete(controller);
@@ -287,6 +310,8 @@ class _MyHomePageState extends State<MyHomePage> {
                             _isSearch = false;
                             _searchController.clear();
                             busSearchList.clear();
+                            // close keyboard
+                            FocusScope.of(context).unfocus();
                           });
                         },
                         icon: const Icon(Icons.close))
@@ -297,7 +322,7 @@ class _MyHomePageState extends State<MyHomePage> {
             // search icon
             AnimatedPositioned(
               duration: const Duration(milliseconds: 200),
-              top: 10,
+              top: 20,
               right: _isSearch ? -100 : 10,
               child: GestureDetector(
                 onTap: () {
@@ -318,6 +343,120 @@ class _MyHomePageState extends State<MyHomePage> {
                             offset: const Offset(0, 5))
                       ]),
                   child: const Icon(Icons.search),
+                ),
+              ),
+            ),
+            // show all bus
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 200),
+              top: 90,
+              right: !_isShowAll ? 10 : -100,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isShowAll = false;
+                    showModalBottomSheet(
+                        shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(20),
+                                topRight: Radius.circular(20))),
+                        context: context,
+                        builder: (context) {
+                          return Container(
+                            child: Column(
+                              children: [
+                                // bar show all bus
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                  child: Container(
+                                    height: 50,
+                                    child: Row(
+                                      children: [
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        const Text(
+                                          'Show All Bus',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        const Spacer(),
+                                        IconButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            icon: const Icon(Icons.close))
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Divider(
+                                  height: 1,
+                                  // thickness: 2,
+                                ),
+                                Expanded(
+                                  child: ListView.separated(
+                                    // physics:
+                                    //     const NeverScrollableScrollPhysics(),
+                                    // padding: const EdgeInsets.all(8),
+                                    shrinkWrap: true,
+                                    itemCount: busList.length,
+                                    separatorBuilder: (context, index) {
+                                      return const Divider(
+                                        height: 1,
+                                      );
+                                    },
+                                    itemBuilder: (context, index) {
+                                      return ListTile(
+                                        leading:
+                                            const Icon(Icons.directions_bus),
+                                        title: Text(busList[index].name),
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(busList[index].distance),
+                                            Text(
+                                              'Now the bus is in: ${busList[index].address}',
+                                              style:
+                                                  const TextStyle(fontSize: 10),
+                                            ),
+                                          ],
+                                        ),
+                                        trailing: Text(busList[index].duration),
+                                        isThreeLine: true,
+                                        onTap: () {
+                                          changeCameraPosition(LatLng(
+                                              busList[index].location.latitude,
+                                              busList[index]
+                                                  .location
+                                                  .longitude));
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        });
+                  });
+                },
+                child: Container(
+                  height: 50,
+                  width: 50,
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.grey,
+                            blurRadius: 5,
+                            offset: const Offset(0, 5))
+                      ]),
+                  child: const Icon(Icons.list),
                 ),
               ),
             ),
@@ -426,8 +565,14 @@ class _MyHomePageState extends State<MyHomePage> {
         'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${userLatLng.latitude},${userLatLng.longitude}&origins=${busLatLng.latitude},${busLatLng.longitude}&key=AIzaSyCaGjSBHkRCXtTB8u0H9yeErCPg6xDVLD8';
     try {
       var response = await http.get(
-        Uri.parse(Url),
-      );
+          Uri.parse(
+            Url,
+          ),
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            'Content-Type': 'application/json',
+            'Accept': '*/*'
+          });
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else
@@ -440,17 +585,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void addBusMarker(String busId, LatLng busLatLng, String busName,
       String distance, String duration) {
-    setState(() {
-      _markers.add(Marker(
-        markerId: MarkerId(busId),
-        position: busLatLng,
-        infoWindow: InfoWindow(
-            title: busName,
-            snippet: 'Distance: $distance, Duration: $duration'),
-        icon: BusMarkerIcon,
-        onTap: (() => getDistance(busLatLng: busLatLng)),
-      ));
-      print(_markers.length);
-    });
+    _markers.add(Marker(
+      markerId: MarkerId(busId),
+      draggable: true,
+      onDragEnd: (newPosition) {
+        print(newPosition);
+      },
+      position: busLatLng,
+      infoWindow: InfoWindow(
+          title: busName, snippet: 'Distance: $distance, Duration: $duration'),
+      icon: BusMarkerIcon,
+    ));
   }
 }
