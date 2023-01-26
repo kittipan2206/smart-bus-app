@@ -35,6 +35,11 @@ class MyApp extends StatelessWidget {
           foregroundColor: Colors.black,
           elevation: 1,
         ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             foregroundColor: Colors.white,
@@ -354,8 +359,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         builder: (context) => const SettingPage()));
               },
               icon: Icon(Icons.settings)),
-          _isLogin
+          !_isLogin
               ? IconButton(
+                  tooltip: 'Login',
                   onPressed: () {
                     Navigator.push(
                         context,
@@ -364,14 +370,44 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                   icon: Icon(Icons.login))
               : IconButton(
-                  onPressed: () async {
-                    await FirebaseAuth.instance.signOut();
+                  tooltip: 'Logout',
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: Text('Logout'),
+                            content: Text('Are you sure to logout?'),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text('Cancel')),
+                              OutlinedButton(
+                                  onPressed: () {
+                                    FirebaseAuth.instance
+                                        .signOut()
+                                        .then((value) {
+                                      Fluttertoast.showToast(
+                                          msg: 'Already Logout');
+                                      setState(() {
+                                        _isLogin = false;
+                                      });
+                                      Navigator.pop(context);
+                                      // Navigator.push(
+                                      //     context,
+                                      //     MaterialPageRoute(
+                                      //         builder: (context) => const LoginPage()));
+                                    });
+                                  },
+                                  child: Text('Logout',
+                                      style: TextStyle(color: Colors.red)))
+                            ],
+                          );
+                        });
+
                     // prefs!.setBool('isLogin', false);
-                    // Fluttertoast.showToast(msg: 'Logout');
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const LoginPage()));
                   },
                   icon: Icon(Icons.logout))
         ],
