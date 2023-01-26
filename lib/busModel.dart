@@ -10,6 +10,7 @@ class Bus {
   String duration;
   int distanceInMeters;
   String address;
+  int durationInSeconds;
 
   Bus(
       {required this.id,
@@ -19,5 +20,6 @@ class Bus {
       required this.distance,
       required this.duration,
       required this.distanceInMeters,
-      required this.address});
+      required this.address,
+      required this.durationInSeconds});
 }

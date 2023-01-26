@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_bus/register_page.dart';
 
@@ -93,7 +94,6 @@ class _LoginPageState extends State<LoginPage> {
                                 // save user id to shared preferences
                                 SharedPreferences prefs =
                                     await SharedPreferences.getInstance();
-                                prefs.setBool('isLogin', true);
                                 // navigate to home page
                                 Navigator.pushReplacement(
                                     context,
@@ -103,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                                             )));
                               });
                             } on FirebaseAuthException catch (e) {
-                              // Fluttertoast.showToast(msg: e.message.toString());
+                              Fluttertoast.showToast(msg: e.message.toString());
                             }
                           }
                         },
