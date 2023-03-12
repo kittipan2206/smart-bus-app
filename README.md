@@ -29,11 +29,3 @@ This is a Flutter app for managing bus routes and schedules.
 ## Usage
 
 The app provides a user interface for managing bus routes and schedules. Users can view the nearest bus stop, expected arrival time, and distance. Bus drivers can sign in to access additional features.
-
-## Contributing
-
-Contributions are welcome! Please open a pull request.
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
