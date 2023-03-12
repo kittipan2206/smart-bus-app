@@ -22,12 +22,11 @@ This is a Flutter app for managing bus routes and schedules.
 
 ```flutter pub get```
 
-```cd smart-bus-app```
-```cd smart-bus-app```
-
     4. Run the app:
 
-```flutter run```
+    ```
+    flutter run
+    ```
 
 ## Usage
 
