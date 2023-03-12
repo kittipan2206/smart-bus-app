@@ -12,19 +12,19 @@ This is a Flutter app for managing bus routes and schedules.
 
     1. Clone the repository:
 
-``` git clone https://github.com/kittipan2206/smart-bus-app.git ```
+    git clone https://github.com/kittipan2206/smart-bus-app.git
 
     2. Navigate to the project directory:
 
-``` cd smart-bus-app ```
+    cd smart-bus-app
 
     3. Install dependencies:
 
-``` flutter pub get ```
+    flutter pub get
 
     4. Run the app:
 
-``` flutter run ```
+    flutter run 
 
 ## Usage
 
