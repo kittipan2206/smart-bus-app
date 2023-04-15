@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_bus/register_page.dart';
 
+import 'busModel.dart';
+import 'globals.dart';
+import 'home_page.dart';
 import 'main.dart';
 // firebase auth
 import 'package:firebase_auth/firebase_auth.dart';
@@ -42,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
             // mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Image.asset(
-                'assets/images/bus_image2.png',
+                'assets/images/logo.png',
                 width: MediaQuery.of(context).size.width * 0.8,
               ),
               const SizedBox(
@@ -138,17 +143,19 @@ class _LoginPageState extends State<LoginPage> {
                                         email: EmailController.text,
                                         password: passwordController.text)
                                     .then((value) async {
+                                  busStreamController.close();
+                                  isLogin = true;
                                   Fluttertoast.showToast(
                                       msg: 'Login success',
                                       backgroundColor: Colors.green,
                                       webBgColor: '#00FF00');
                                   // navigate to home page
-                                  Navigator.pushReplacement(
+                                  Navigator.pushAndRemoveUntil(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => MyHomePage(
-                                                title: 'Smart Bus',
-                                              )));
+                                          builder: (context) =>
+                                              const LoadingPage()),
+                                      (route) => false);
                                 });
                               } on FirebaseAuthException catch (e) {
                                 Fluttertoast.showToast(

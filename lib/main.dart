@@ -1,11 +1,24 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_bus/MapsPage.dart';
 import 'package:smart_bus/login_page.dart';
+import 'package:smart_bus/select_bus_stop_page.dart';
+
+import 'busModel.dart';
+import 'firebase_options.dart';
+import 'globals.dart';
+import 'home_page.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
   runApp(const MyApp());
 }
 
@@ -41,302 +54,161 @@ class MyApp extends StatelessWidget {
             ),
           ),
           floatingActionButtonTheme: const FloatingActionButtonThemeData(
-              backgroundColor: Colors.green,
-              shape: CircleBorder(
-                  side: BorderSide(color: Colors.white, width: 2))),
+            backgroundColor: Colors.green,
+            // shape: CircleBorder(
+            //     side: BorderSide(color: Colors.white, width: 2))
+          ),
           primarySwatch: Colors.green),
-      home: const MyHomePage(title: 'Smart Bus'),
+      home: const LoadingPage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+class LoadingPage extends StatefulWidget {
+  const LoadingPage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _LoadingPageState createState() => _LoadingPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _LoadingPageState extends State<LoadingPage> {
+  String text = 'Loading...';
   @override
   void initState() {
-    FlutterNativeSplash.remove();
+    checkLogin().then((value) {
+      FlutterNativeSplash.remove();
+      if (isLogin) initAll();
+    });
+
     super.initState();
   }
 
+  Future<void> initAll() async {
+    text = 'Getting current location...';
+    await getCurrentLocation();
+    setState(() {
+      text = 'Checking login...';
+    });
+    await checkProfile();
+    await checkLogin();
+    print('busList: ${busList.length}');
+    if (isLogin) {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const MyHomePage()));
+    } else {
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context) => const SelectBusStopPage()));
+    }
+  }
+
+  Future<void> checkLogin() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    ).then((value) async {
+      FirebaseAuth auth = FirebaseAuth.instance;
+      isLogin = auth.currentUser != null;
+      if (auth.currentUser != null) {
+        user = auth.currentUser;
+        allBusList.clear();
+        await getBusList();
+        busDriverUID = user!.uid;
+        print(auth.currentUser.runtimeType);
+        print('auth.currentUser: ${auth.currentUser?.email}');
+        print('auth.currentUser: ${auth.currentUser?.displayName}');
+        return;
+      }
+      if (type == null) return;
+      print('isLogin: $isLogin');
+      setState(() {
+        text = 'Fetching bus list...';
+      });
+      await streamBusLocation();
+      await getBusList();
+      Fluttertoast.showToast(msg: 'Firebase initialized');
+    });
+  }
+
+  String? type;
   @override
   Widget build(BuildContext context) {
+    if (type == null) {
+      return SafeArea(
+          child: Scaffold(
+              body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset('assets/images/logo.png', width: 250),
+          Text('Phuket Smart Bus',
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineMedium!
+                  .copyWith(fontWeight: FontWeight.bold)),
+          Text('Select your profile',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium!
+                  .copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: GridView(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
+                children: [
+                  ElevatedButton(
+                      onPressed: () async {
+                        await checkLogin();
+                        await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const LoginPage()));
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.directions_bus, size: 50),
+                          Text('Driver', style: TextStyle(fontSize: 20)),
+                        ],
+                      )),
+                  ElevatedButton(
+                      onPressed: () {
+                        type = 'passenger';
+                        initAll();
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.directions_walk, size: 50),
+                          Text('Passenger', style: TextStyle(fontSize: 20)),
+                        ],
+                      )),
+                ]),
+          ),
+        ],
+      )));
+    }
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: const Color.fromARGB(255, 255, 99, 96),
-        title: Row(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
-                );
-              },
-              child: const Text(
-                'Sign in for bus driver',
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
-            ),
-            const Spacer(),
-            IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.settings_rounded,
-                  color: Colors.white,
-                  size: 30,
-                )),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 10),
+            Text(text),
           ],
         ),
       ),
-      // set background color to FF6260
-      backgroundColor: const Color.fromARGB(255, 255, 99, 96),
-      body: Stack(
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Container(
-                // height 60% of screen
-                height: MediaQuery.of(context).size.height * 0.6,
-                width: double.infinity,
-                color: Colors.grey[200],
-              )
-            ],
-          ),
-          SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  children: [
-                    Image.asset(
-                      'assets/images/bus_image1.png',
-                      height: 200,
-                    ),
-                    Card(
-                      color: const Color(0xFFF5A522),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Text(
-                                    'Nearest bus stop',
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 20),
-                                  ),
-                                  const Spacer(),
-                                  IconButton(
-                                      onPressed: () {},
-                                      icon: const Icon(
-                                        Icons.directions_walk_rounded,
-                                        color: Colors.white,
-                                      )),
-                                  IconButton(
-                                      onPressed: () {},
-                                      icon: const Icon(
-                                        Icons.menu,
-                                        color: Colors.white,
-                                      )),
-                                ],
-                              ),
-                              Card(
-                                color: Colors.white,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10.0),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.location_on_rounded,
-                                            color: Colors.green,
-                                          ),
-                                          const SizedBox(
-                                            width: 10,
-                                          ),
-                                          const Text(
-                                            'Bus stop 1',
-                                            style: TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 20),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const Spacer(),
-                                          TextButton(
-                                              onPressed: () {},
-                                              child: const Text(
-                                                'Show more',
-                                                style: TextStyle(
-                                                    color: Color(0xFFF5A522)),
-                                              )),
-                                        ],
-                                      ),
-                                      Center(
-                                          child: Column(
-                                        children: [
-                                          const Text(
-                                            'Expected to arrive in about',
-                                            style: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 15),
-                                          ),
-                                          const Text(
-                                            '15 min',
-                                            style: TextStyle(
-                                                color: Color(0xFFF5A522),
-                                                fontSize: 30,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              const Text(
-                                                'Distance about',
-                                                style: TextStyle(
-                                                    color: Colors.grey,
-                                                    fontSize: 15),
-                                              ),
-                                              const Text(
-                                                ' 1.5 km',
-                                                style: TextStyle(
-                                                    color: Colors.grey,
-                                                    fontSize: 15,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                            ],
-                                          ),
-                                          const Divider(
-                                            color: Colors.grey,
-                                          ),
-                                          const Text(
-                                            'The next bus is expected to arrive',
-                                            style: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 13),
-                                          ),
-                                          Card(
-                                            color: Colors.grey[100],
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(10.0),
-                                              child: Column(
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      const Text(
-                                                        'Bus license plate: XXXX',
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                        ),
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                      ),
-                                                      const Spacer(),
-                                                      Column(
-                                                        children: [
-                                                          const Text(
-                                                            '800',
-                                                            style: TextStyle(
-                                                                color: Color(
-                                                                    0xFFF5A522),
-                                                                fontSize: 15),
-                                                          ),
-                                                          const Text(
-                                                            '15 min',
-                                                            style: TextStyle(
-                                                                color: Color(
-                                                                    0xFFF5A522),
-                                                                fontSize: 15,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  ElevatedButton(
-                                                      onPressed: () {
-                                                        Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                                builder:
-                                                                    (context) =>
-                                                                        const MapsPage()));
-                                                      },
-                                                      child:
-                                                          const Text('Track'))
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ))
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Center(
-                                child: TextButton(
-                                    onPressed: () {},
-                                    child: const Text(
-                                      'Choose another bus stop',
-                                      style:
-                                          TextStyle(color: Color(0xFFFF6260)),
-                                    )),
-                              )
-                            ],
-                          )),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Card(
-                      color: Colors.white,
-                      child: Container(
-                        width: double.infinity,
-                        height: 200,
-                        child: Center(
-                            child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset(
-                              'assets/images/bus_logo.png',
-                              height: 100,
-                            ),
-                            const Text(
-                              "You haven't tracked any bus yet",
-                              style:
-                                  TextStyle(color: Colors.grey, fontSize: 15),
-                            ),
-                          ],
-                        )),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
+  }
+
+  checkProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    profile = prefs.getString('profile') ?? 'foot-walking';
+    print('profile: $profile');
   }
 }

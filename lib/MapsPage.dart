@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_bus/globals.dart';
 import 'package:smart_bus/setting.dart';
 import 'package:smart_bus/busDriverModel.dart';
 import 'busModel.dart';
@@ -24,6 +25,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:ui' as ui;
 
 import 'network_helper.dart';
+import 'package:smart_bus/globals.dart';
 
 class MapsPage extends StatefulWidget {
   const MapsPage({Key? key}) : super(key: key);
@@ -33,12 +35,6 @@ class MapsPage extends StatefulWidget {
 }
 
 class _MapsPageState extends State<MapsPage> {
-  int _counter = 0;
-  bool _isLogin = false;
-  bool _getGoogleApi = false;
-  var profile = 'foot-walking';
-  User? user;
-
   Location currentLocation = Location();
   // marker
   Set<Marker> _markers = {};
@@ -53,7 +49,6 @@ class _MapsPageState extends State<MapsPage> {
   BitmapDescriptor userMarkerIcon = BitmapDescriptor.defaultMarker;
   BitmapDescriptor BusMarkerIcon = BitmapDescriptor.defaultMarker;
   SharedPreferences? prefs;
-  List<Bus> busList = [];
   List<Bus> busSearchList = [];
   Timer? timer1;
   // FirebaseAuth? auth;
@@ -71,16 +66,16 @@ class _MapsPageState extends State<MapsPage> {
   @override
   void initState() {
     super.initState();
+    streamBusLocation();
     // Fluttertoast.showToast(msg: 'Getting Current Location');
     getCurrentLocation().then((value) {
       _goToCurrentLocation();
-      checkLogin();
     });
     // delay 1 second
-    Future.delayed(const Duration(seconds: 5), () {
-      // get bus data
-      getDistanceDuration();
-    });
+    // Future.delayed(const Duration(seconds: 5), () {
+    //   // get bus data
+    //   getDistanceDuration();
+    // });
     // loop get duration
     // timer1 = Timer.periodic(const Duration(minutes: 1), (timer) {
     //   getDistanceDuration();
@@ -138,12 +133,12 @@ class _MapsPageState extends State<MapsPage> {
             //     gDistanceApi['origin_addresses'][0].toString();
             // int durationValue =
             //     gDistanceApi['rows'][0]['elements'][0]['duration']['value'];
-            print(_getGoogleApi);
-            if (_getGoogleApi) {
+            print(getGoogleApi);
+            if (getGoogleApi) {
               dynamic gDistanceApi = await getDistance(busLatLng: latLng);
               print(gDistanceApi);
               if (gDistanceApi['rows'][0]['elements'][0]['status'] == 'OK' &&
-                  _getGoogleApi == true) {
+                  getGoogleApi == true) {
                 distance =
                     gDistanceApi['rows'][0]['elements'][0]['distance']['text'];
                 duration =
@@ -182,6 +177,7 @@ class _MapsPageState extends State<MapsPage> {
                 distanceInMeters: distanceValue,
                 address: originAddress,
                 durationInSeconds: durationValue,
+                line: event['line'],
               ));
             });
           } catch (e) {
@@ -189,8 +185,6 @@ class _MapsPageState extends State<MapsPage> {
             print(e);
           }
         });
-        // addBusMarker(element.id, LatLng(geoPoint.latitude, geoPoint.longitude));
-        // when complete sort bus list
       });
     });
   }
@@ -218,7 +212,7 @@ class _MapsPageState extends State<MapsPage> {
     PermissionStatus _permissionGranted;
     prefs = await SharedPreferences.getInstance();
 
-    _getGoogleApi = prefs!.getBool('googleDistanceMatrixAPI') ?? false;
+    getGoogleApi = prefs!.getBool('googleDistanceMatrixAPI') ?? false;
 
     _serviceEnabled = await location.serviceEnabled();
     if (!_serviceEnabled) {
@@ -259,39 +253,6 @@ class _MapsPageState extends State<MapsPage> {
     });
   }
 
-  // FirebaseAuth? auth;
-  Future<void> checkLogin() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    ).then((value) async {
-      await streamBusLocation();
-    });
-    FirebaseAuth auth = FirebaseAuth.instance;
-    _isLogin = auth.currentUser != null;
-    if (auth.currentUser != null) {
-      user = auth.currentUser;
-      print(auth.currentUser.runtimeType);
-      print('auth.currentUser: ${auth.currentUser?.email}');
-      print('auth.currentUser: ${auth.currentUser?.displayName}');
-    }
-    print('isLogin: $_isLogin');
-    // print('auth.currentUser: ${auth.currentUser?.email}');
-    // print('auth.currentUser: ${auth.currentUser?.displayName}');
-
-    // busDriver = BusDriver(
-    //     name: auth.currentUser.displayName, email: auth.currentUser?.email);
-    // _isLogin = (prefs!.getBool('isLogin') ?? false);
-
-    // if (!_isLogin) {
-    //   Navigator.push(
-    //     context,
-    //     MaterialPageRoute(builder: (context) => const LoginPage()),
-    //   );
-    // }
-  }
-
-  int? _selectedBusIndex;
-
   TextEditingController _searchController = TextEditingController();
   bool _isSearch = false;
   @override
@@ -322,23 +283,23 @@ class _MapsPageState extends State<MapsPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: InkWell(
           onLongPress: () {},
-          onTap: _selectedBusIndex == null
+          onTap: selectedBusIndex == null
               ? _goToCurrentLocation
               : () {
                   Fluttertoast.showToast(
                       msg: 'Stop Tracking', gravity: ToastGravity.TOP);
                   setState(() {
-                    _selectedBusIndex = null;
+                    selectedBusIndex = null;
                   });
                 },
           // label: const Text('To Current Location'),
 
           child: FloatingActionButton(
             onPressed: null,
-            child: _selectedBusIndex == null
+            child: selectedBusIndex == null
                 ? Icon(Icons.location_history)
                 : Icon(Icons.stop),
-            backgroundColor: _selectedBusIndex == null ? null : Colors.red,
+            backgroundColor: selectedBusIndex == null ? null : Colors.red,
           )),
       appBar: AppBar(
         title: Text(user != null ? user!.displayName! : 'Bus Tracking'),
@@ -352,7 +313,7 @@ class _MapsPageState extends State<MapsPage> {
                         builder: (context) => const SettingPage()));
               },
               icon: Icon(Icons.settings)),
-          !_isLogin
+          !isLogin
               ? IconButton(
                   tooltip: 'Login',
                   onPressed: () {
@@ -385,7 +346,7 @@ class _MapsPageState extends State<MapsPage> {
                                       Fluttertoast.showToast(
                                           msg: 'Already Logout');
                                       setState(() {
-                                        _isLogin = false;
+                                        isLogin = false;
                                       });
                                       Navigator.pop(context);
                                       // Navigator.push(
@@ -593,7 +554,7 @@ class _MapsPageState extends State<MapsPage> {
                   ),
                 ),
               ),
-            _selectedBusIndex != null
+            selectedBusIndex != null
                 ? Container(
                     alignment: Alignment.center,
                     // min width
@@ -616,7 +577,7 @@ class _MapsPageState extends State<MapsPage> {
                       children: [
                         Icon(Icons.directions_bus),
                         Text(' Following: '),
-                        Text(busList[_selectedBusIndex!].name,
+                        Text(busList[selectedBusIndex!].name,
                             style:
                                 const TextStyle(fontWeight: FontWeight.bold)),
                       ],
@@ -753,14 +714,14 @@ class _MapsPageState extends State<MapsPage> {
                                     child: OutlinedButton(
                                         style: OutlinedButton.styleFrom(
                                           side: BorderSide(
-                                              color: _selectedBusIndex == index
+                                              color: selectedBusIndex == index
                                                   ? Colors.red
                                                   : Colors.green),
                                         ),
                                         onPressed: () {
-                                          _selectedBusIndex == index
+                                          selectedBusIndex == index
                                               ? setState(() {
-                                                  _selectedBusIndex = null;
+                                                  selectedBusIndex = null;
                                                 })
                                               : setState(() {
                                                   Navigator.pop(context);
@@ -768,11 +729,11 @@ class _MapsPageState extends State<MapsPage> {
                                                 });
                                         },
                                         child: Text(
-                                          _selectedBusIndex == index
+                                          selectedBusIndex == index
                                               ? 'Stop follow'
                                               : 'Follow',
                                           style: TextStyle(
-                                              color: _selectedBusIndex == index
+                                              color: selectedBusIndex == index
                                                   ? Colors.red
                                                   : Colors.green),
                                         )),
@@ -793,12 +754,12 @@ class _MapsPageState extends State<MapsPage> {
   alwaysCameraPosition(int busIndex) async {
     timer1?.cancel();
     setState(() {
-      _selectedBusIndex = busIndex;
+      selectedBusIndex = busIndex;
     });
     changeCameraPosition(LatLng(busList[busIndex].location.latitude,
         busList[busIndex].location.longitude));
 
-    if (_selectedBusIndex != null) {
+    if (selectedBusIndex != null) {
       // getposition every 5s
       timer1 = Timer.periodic(const Duration(seconds: 2), (timer) {
         changeCameraPosition(
@@ -806,7 +767,7 @@ class _MapsPageState extends State<MapsPage> {
               busList[busIndex].location.longitude),
         );
         print('change camera position');
-        if (_selectedBusIndex == null) timer.cancel();
+        if (selectedBusIndex == null) timer.cancel();
       });
     }
   }
@@ -821,89 +782,6 @@ class _MapsPageState extends State<MapsPage> {
   changeCameraPosition(LatLng latLng) async {
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newLatLng(latLng));
-  }
-
-  Future<dynamic> getDistance({required LatLng busLatLng}) async {
-    String url =
-        'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${userLatLng.latitude},${userLatLng.longitude}&origins=${busLatLng.latitude},${busLatLng.longitude}&key=AIzaSyCaGjSBHkRCXtTB8u0H9yeErCPg6xDVLD8';
-    try {
-      print("user lat long api get" + userLatLng.toString());
-      var response = await http.get(
-          Uri.parse(
-            url,
-          ),
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            'Content-Type': 'application/json',
-            'Accept': '*/*'
-          });
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else
-        return null;
-    } catch (e) {
-      print(e);
-      return null;
-    }
-  }
-
-  Future<void> getDistanceDuration() async {
-    print('get api');
-
-    String url = 'https://api.openrouteservice.org/v2/matrix/$profile';
-
-    Map<String, dynamic> jsonPayload = {
-      "locations": [
-        [userLatLng.longitude, userLatLng.latitude],
-        // why use longitude first? https://gis.stackexchange.com/questions/142326/why-are-longitude-and-latitude-reversed-in-latitude-longitude-coordinate-order
-        // all bus location
-        ...busList.map((e) => [e.location.longitude, e.location.latitude])
-      ],
-      "metrics": ["distance", "duration"],
-      "resolve_locations": "true",
-      "sources": [0]
-    };
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-          "Accept":
-              "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8",
-          "Authorization":
-              "5b3ce3597851110001cf62482c216c56fdbe49f5a15841ad3a59b770"
-        },
-        body: json.encode(jsonPayload),
-      );
-      if (response.statusCode == 200) {
-        var output = json.decode(response.body);
-        print(output);
-        for (int i = 0; i < busList.length; i++) {
-          // duration unit is second
-          int rawDuration = output['durations'][0][i + 1].toInt() + 1;
-          busList[i].durationInSeconds = rawDuration;
-          // distance unit is meter
-          int rawDistance = output['distances'][0][i + 1].toInt() + 1;
-          busList[i].distanceInMeters = rawDistance;
-          busList[i].address = output['destinations'][i + 1]['name'] != null
-              ? output['destinations'][i + 1]['name']
-              : 'unknown';
-          // busList[i].duration = rawDuration <= 60 * 60
-          //     ? '${(rawDuration / 60).toInt()} min'
-          //     : '${(rawDuration / 60).toInt()} hr ${(rawDuration % 60).toInt()} min';
-          // busList[i].distance = rawDistance <= 1000
-          //     ? '${(rawDistance).toInt()} m'
-          //     // two digit after decimal point
-          //     : '${(rawDistance / 1000).toInt()}.${(rawDistance % 1000).toInt()} km';
-        }
-        setState(() {});
-      } else {
-        print(response.statusCode);
-        print(response.body);
-      }
-    } catch (e) {
-      print(e);
-    }
   }
 
   Future<void> getJsonData(startLat, startLng, endLat, endLng) async {
@@ -931,7 +809,7 @@ class _MapsPageState extends State<MapsPage> {
 
       Polyline polyline = Polyline(
         polylineId: PolylineId('poly'),
-        color: Colors.green,
+        color: Colors.blue,
         // geodesic: true,
         width: 5,
         patterns: [PatternItem.dot, PatternItem.gap(20)],
@@ -1011,7 +889,7 @@ class _MapsPageState extends State<MapsPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text('Bus ID: ${busList[index].id}'),
-                  Text('Bus Status: ${busList[index].status}'),
+                  // Text('Bus Status: ${busList[index].status}'),
                   Text('Distance:\t${busList[index].getDistance()}'),
                   Text('Duration:\t${busList[index].getDuration()}'),
                   Text('Now at: ${busList[index].address}'),
