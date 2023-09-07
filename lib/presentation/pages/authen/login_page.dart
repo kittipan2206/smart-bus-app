@@ -1,14 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:smart_bus/register_page.dart';
+import 'package:get/get.dart';
+import 'package:smart_bus/presentation/pages/authen/register_page.dart';
 
-import 'busModel.dart';
-import 'globals.dart';
-import 'home_page.dart';
-import 'main.dart';
+import '../../../globals.dart';
 // firebase auth
 import 'package:firebase_auth/firebase_auth.dart';
 // google sign in
@@ -30,8 +25,9 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final FirebaseAuth auth = FirebaseAuth.instance;
     return Scaffold(
-      backgroundColor: Colors.white,
+      // backgroundColor: Colors.white,
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
@@ -149,13 +145,14 @@ class _LoginPageState extends State<LoginPage> {
                                       msg: 'Login success',
                                       backgroundColor: Colors.green,
                                       webBgColor: '#00FF00');
+                                  Get.back();
                                   // navigate to home page
-                                  Navigator.pushAndRemoveUntil(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const LoadingPage()),
-                                      (route) => false);
+                                  // Navigator.pushAndRemoveUntil(
+                                  //     context,
+                                  //     MaterialPageRoute(
+                                  //         builder: (context) =>
+                                  //             const LoadingPage()),
+                                  //     (route) => false);
                                 });
                               } on FirebaseAuthException catch (e) {
                                 Fluttertoast.showToast(
@@ -219,8 +216,7 @@ class _LoginPageState extends State<LoginPage> {
                                         }
                                         try {
                                           // send email
-                                          FirebaseAuth auth =
-                                              FirebaseAuth.instance;
+
                                           await auth.sendPasswordResetEmail(
                                               email: EmailController.text);
                                           Fluttertoast.showToast(
@@ -273,11 +269,11 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                           Center(
                               child: Container(
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+                            color: Colors.white,
+                            child: const Padding(
+                              padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
                               child: Text('OR'),
                             ),
-                            color: Colors.white,
                           )),
                         ],
                       ),
@@ -296,16 +292,18 @@ class _LoginPageState extends State<LoginPage> {
                         },
                         child: const Text('Register'),
                       ),
-                      ElevatedButton.icon(
-                          style: ButtonStyle(
-                            backgroundColor:
-                                MaterialStateProperty.all<Color>(Colors.white),
-                            foregroundColor: MaterialStateColor.resolveWith(
-                                (states) => Colors.black),
-                          ),
-                          onPressed: () {},
-                          icon: const Icon(Icons.login),
-                          label: const Text('Sign in with Google')),
+                      // ElevatedButton.icon(
+                      //     style: ButtonStyle(
+                      //       backgroundColor:
+                      //           MaterialStateProperty.all<Color>(Colors.white),
+                      //       foregroundColor: MaterialStateColor.resolveWith(
+                      //           (states) => Colors.black),
+                      //     ),
+                      //     onPressed: () async {
+                      //       signInWithGoogle();
+                      //     },
+                      //     icon: const Icon(Icons.login),
+                      //     label: const Text('Sign in with Google')),
                     ],
                   ),
                 ),
@@ -315,5 +313,25 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  void signInWithGoogle() async {
+    GoogleSignIn _googleSignIn = GoogleSignIn(
+      scopes: [
+        'email',
+        'https://www.googleapis.com/auth/contacts.readonly',
+      ],
+    );
+    try {
+      await _googleSignIn.signIn();
+      await FirebaseAuth.instance.signInWithCredential(
+          GoogleAuthProvider.credential(
+              idToken:
+                  (await _googleSignIn.currentUser!.authentication).idToken,
+              accessToken: (await _googleSignIn.currentUser!.authentication)
+                  .accessToken));
+    } catch (e) {
+      Fluttertoast.showToast(msg: e.toString());
+    }
   }
 }

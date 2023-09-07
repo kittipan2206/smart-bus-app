@@ -1,19 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:smart_bus/home_page.dart';
 
-import 'busModel.dart';
-import 'firebase_options.dart';
+import 'model/bus_model.dart';
 import 'package:http/http.dart' as http;
 
 int? selectedBusIndex;
@@ -23,12 +18,12 @@ bool getGoogleApi = false;
 String profile = 'foot-walking';
 User? user;
 // stream bus location
-StreamController<Bus> busStreamController = StreamController<Bus>();
+StreamController<BusModel> busStreamController = StreamController<BusModel>();
 // StreamController<bool> allBusStreamController = StreamController<bool>();
 // bus list
-List<Bus> busList = [];
+Rx<List<BusModel>> busList = Rx<List<BusModel>>([]);
 Location currentLocation = Location();
-Bus? nearestBusStop;
+BusModel? nearestBusStop;
 bool isStreamBusLocation = false;
 String? busDriverUID;
 
@@ -163,11 +158,11 @@ Future<void> streamBusLocation() async {
           // ));
           // print('list' + busList.length.toString());
           // sort bus list by distance
-          busList
+          busList.value
               .sort((a, b) => a.distanceInMeters.compareTo(b.distanceInMeters));
 
-          busList.removeWhere((element) => element.id == event.id);
-          busList.add(Bus(
+          busList.value.removeWhere((element) => element.id == event.id);
+          busList.value.add(BusModel(
             id: event.id,
             name: event['name'],
             location: geoPoint,
@@ -178,7 +173,7 @@ Future<void> streamBusLocation() async {
             durationInSeconds: durationValue,
             line: event['line'],
           ));
-          print('list' + busList.length.toString());
+          print('list' + busList.value.length.toString());
         } catch (e) {
           // Fluttertoast.showToast(msg: 'Error: $e');
           print(e);
@@ -190,11 +185,11 @@ Future<void> streamBusLocation() async {
     }
     await Future.delayed(const Duration(seconds: 1));
     await getDistanceDuration();
-    for (var i = 0; i < busList.length; i++) {
-      print('busList: ${busList[i].name}');
-      print('busList: ${busList[i].getDistance()}');
-      print('busList: ${busList[i].getDuration()}');
-      busList[i].startTimer();
+    for (var i = 0; i < busList.value.length; i++) {
+      print('busList: ${busList.value[i].name}');
+      print('busList: ${busList.value[i].getDistance()}');
+      print('busList: ${busList.value[i].getDuration()}');
+      busList.value[i].startTimer();
     }
   });
 }
@@ -205,35 +200,36 @@ Future<void> getBusList() async {
           .collection('bus_data')
           .where('owner', isEqualTo: busDriverUID)
           .get()
-          .then((value) async {
-          print(value.docs.length);
-          for (var element in value.docs) {
-            await FirebaseFirestore.instance
-                .collection('bus_data')
-                .doc(element.id)
-                .get()
-                .then((value) async {
-              allBusList.add(value.data()!);
-              print('allBusList: ${allBusList}');
-            });
-          }
-        })
-      : await FirebaseFirestore.instance
-          .collection('bus_data')
-          .get()
-          .then((value) async {
-          for (var element in value.docs) {
-            FirebaseFirestore.instance
-                .collection('bus_data')
-                .doc(element.id)
-                .snapshots()
-                .listen((event) async {
-              allBusList.add(event.data()!);
+          .then(
+          (value) async {
+            print(value.docs.length);
+            for (var element in value.docs) {
+              await FirebaseFirestore.instance
+                  .collection('bus_data')
+                  .doc(element.id)
+                  .get()
+                  .then((value) async {
+                allBusList.add(value.data()!);
+                print('allBusList: ${allBusList}');
+              });
+            }
+          },
+        )
+      : await FirebaseFirestore.instance.collection('bus_data').get().then(
+          (value) async {
+            for (var element in value.docs) {
+              FirebaseFirestore.instance
+                  .collection('bus_data')
+                  .doc(element.id)
+                  .snapshots()
+                  .listen((event) async {
+                allBusList.add(event.data()!);
 
-              print('allBusList: ${allBusList}');
-            });
-          }
-        });
+                print('allBusList: ${allBusList}');
+              });
+            }
+          },
+        );
 }
 
 Future<dynamic> getDistance({required LatLng busLatLng}) async {
@@ -261,16 +257,13 @@ Future<dynamic> getDistance({required LatLng busLatLng}) async {
 }
 
 Future<void> getDistanceDuration() async {
-  print('get api');
-
+  print('get api $userLatLng');
   String url = 'https://api.openrouteservice.org/v2/matrix/$profile';
 
   Map<String, dynamic> jsonPayload = {
     "locations": [
       [userLatLng!.longitude, userLatLng!.latitude],
-      // why use longitude first? https://gis.stackexchange.com/questions/142326/why-are-longitude-and-latitude-reversed-in-latitude-longitude-coordinate-order
-      // all bus location
-      ...busList.map((e) => [e.location.longitude, e.location.latitude])
+      ...busList.value.map((e) => [e.location.longitude, e.location.latitude])
     ],
     "metrics": ["distance", "duration"],
     "resolve_locations": "true",
@@ -293,19 +286,19 @@ Future<void> getDistanceDuration() async {
     if (response.statusCode == 200) {
       var output = json.decode(response.body);
       print(output);
-      for (int i = 0; i < busList.length; i++) {
+      for (int i = 0; i < busList.value.length; i++) {
         // duration unit is second
         int rawDuration = output['durations'][0][i + 1].toInt() + 1;
-        busList[i].durationInSeconds = rawDuration;
+        busList.value[i].durationInSeconds = rawDuration;
         // distance unit is meter
         int rawDistance = output['distances'][0][i + 1].toInt() + 1;
-        busList[i].distanceInMeters = rawDistance;
-        busList[i].address = output['destinations'][i + 1]['name'] != null
-            ? output['destinations'][i + 1]['name']
-            : 'unknown';
+        busList.value[i].distanceInMeters = rawDistance;
+        busList.value[i].address =
+            output['destinations'][i + 1]['name'] ?? 'unknown';
       }
-      busList.sort((a, b) => a.distanceInMeters.compareTo(b.distanceInMeters));
-      busStreamController.add(busList.first);
+      busList.value
+          .sort((a, b) => a.distanceInMeters.compareTo(b.distanceInMeters));
+      busStreamController.add(busList.value.first);
     } else {
       print(response.statusCode);
       print(response.body);

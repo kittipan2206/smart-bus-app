@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 // firebase auth
 import 'package:firebase_auth/firebase_auth.dart';
@@ -24,7 +25,9 @@ class _RegisterPageState extends State<RegisterPage> {
   final phoneController = TextEditingController();
   final addressController = TextEditingController();
   var obscureText = true;
-
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  String role = 'user';
+  String licensePlate = '';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -169,6 +172,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                 },
                               ),
                             ),
+
                             // Padding(
                             //   padding: const EdgeInsets.all(8.0),
                             //   child: TextFormField(
@@ -201,6 +205,66 @@ class _RegisterPageState extends State<RegisterPage> {
                             //     },
                             //   ),
                             // ),
+                            // select role user or driver default user dropdown
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: DropdownButtonFormField(
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'Role',
+                                ),
+                                value: 'user',
+                                onChanged: (value) {
+                                  setState(() {
+                                    role = value.toString();
+                                  });
+                                },
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'user',
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.person,
+                                          color: Colors.black,
+                                        ),
+                                        Text('User'),
+                                      ],
+                                    ),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'driver',
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.directions_bus_rounded,
+                                          color: Colors.black,
+                                        ),
+                                        Text('Driver'),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (role == 'driver')
+                              // input license plate
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: TextFormField(
+                                  onChanged: (value) => licensePlate = value,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: 'License Plate',
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter license plate';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                              ),
                             SizedBox(
                               height: 10,
                             ),
@@ -222,6 +286,16 @@ class _RegisterPageState extends State<RegisterPage> {
                                         // set user data
                                         await value.user!.updateDisplayName(
                                             '${firstNameController.text} ${lastNameController.text}');
+
+                                        value.user!.sendEmailVerification();
+
+                                        await _firestore
+                                            .collection('users')
+                                            .doc(value.user!.uid)
+                                            .set({
+                                          'roles': role,
+                                          'licensePlate': licensePlate,
+                                        });
 
                                         // show toast
                                         Fluttertoast.showToast(

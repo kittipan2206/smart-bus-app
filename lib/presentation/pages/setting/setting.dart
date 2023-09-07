@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smart_bus/common/style/app_colors.dart';
+import 'package:smart_bus/presentation/pages/app/app.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({Key? key}) : super(key: key);
@@ -33,6 +35,13 @@ class _SettingPageState extends State<SettingPage> {
           title: const Text('Setting'),
         ),
         body: ListTile(
+          leading: const Icon(Icons.settings),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
+          tileColor: AppColors.yellow,
+          // textColor: AppColors.white,
+          contentPadding: const EdgeInsets.all(10),
           title: const Text('Google Distance Matrix API'),
           subtitle: const Text(
               'Open Google Distance Matrix API for get distance and duration of bus'),
