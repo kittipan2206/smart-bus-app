@@ -12,7 +12,7 @@ class BusModel {
   int distanceInMeters;
   String address;
   int durationInSeconds;
-  var line;
+  Map line;
 
   BusModel({
     required this.id,

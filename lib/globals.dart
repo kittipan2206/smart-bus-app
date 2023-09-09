@@ -91,108 +91,108 @@ updateFirebaseBusLocation() async {
   });
 }
 
-// stream bus location from firebase
-Future<void> streamBusLocation() async {
-  print('streamBusLocation');
-  await FirebaseFirestore.instance
-      .collection('bus_stop_data')
-      .get()
-      .then((value) async {
-    for (var element in value.docs) {
-      FirebaseFirestore.instance
-          .collection('bus_stop_data')
-          .doc(element.id)
-          .snapshots()
-          .listen((event) async {
-        GeoPoint geoPoint = event['location'];
-        print('${element.id} ${geoPoint.latitude}, ${geoPoint.longitude}');
-        // update bus location
-        final latLng = LatLng(geoPoint.latitude, geoPoint.longitude);
-        dynamic gDistanceApi = {
-          'rows': [
-            {
-              'elements': [
-                {
-                  'status': 'N/A',
-                  'distance': {'text': 'N/A', 'value': 0},
-                  'duration': {'text': 'N/A', 'value': 0}
-                }
-              ]
-            }
-          ],
-          'origin_addresses': ['N/A']
-        };
+// // stream bus location from firebase
+// Future<void> streamBusLocation() async {
+//   print('streamBusLocation');
+//   await FirebaseFirestore.instance
+//       .collection('bus_stop_data')
+//       .get()
+//       .then((value) async {
+//     for (var element in value.docs) {
+//       FirebaseFirestore.instance
+//           .collection('bus_stop_data')
+//           .doc(element.id)
+//           .snapshots()
+//           .listen((event) async {
+//         GeoPoint geoPoint = event['location'];
+//         print('${element.id} ${geoPoint.latitude}, ${geoPoint.longitude}');
+//         // update bus location
+//         final latLng = LatLng(geoPoint.latitude, geoPoint.longitude);
+//         dynamic gDistanceApi = {
+//           'rows': [
+//             {
+//               'elements': [
+//                 {
+//                   'status': 'N/A',
+//                   'distance': {'text': 'N/A', 'value': 0},
+//                   'duration': {'text': 'N/A', 'value': 0}
+//                 }
+//               ]
+//             }
+//           ],
+//           'origin_addresses': ['N/A']
+//         };
 
-        try {
-          String distance = 'Not available';
-          String duration = 'Not available';
-          int distanceValue = 0;
-          String originAddress = 'Not available';
-          int durationValue = 0;
-          print(getGoogleApi);
-          if (getGoogleApi) {
-            dynamic gDistanceApi = await getDistance(busLatLng: latLng);
-            print(gDistanceApi);
-            if (gDistanceApi['rows'][0]['elements'][0]['status'] == 'OK' &&
-                getGoogleApi == true) {
-              distance =
-                  gDistanceApi['rows'][0]['elements'][0]['distance']['text'];
-              duration =
-                  gDistanceApi['rows'][0]['elements'][0]['duration']['text'];
-              distanceValue =
-                  gDistanceApi['rows'][0]['elements'][0]['distance']['value'];
-              originAddress = gDistanceApi['origin_addresses'][0].toString();
-              durationValue =
-                  gDistanceApi['rows'][0]['elements'][0]['duration']['value'];
-            }
-          }
+//         try {
+//           String distance = 'Not available';
+//           String duration = 'Not available';
+//           int distanceValue = 0;
+//           String originAddress = 'Not available';
+//           int durationValue = 0;
+//           print(getGoogleApi);
+//           if (getGoogleApi) {
+//             dynamic gDistanceApi = await getDistance(busLatLng: latLng);
+//             print(gDistanceApi);
+//             if (gDistanceApi['rows'][0]['elements'][0]['status'] == 'OK' &&
+//                 getGoogleApi == true) {
+//               distance =
+//                   gDistanceApi['rows'][0]['elements'][0]['distance']['text'];
+//               duration =
+//                   gDistanceApi['rows'][0]['elements'][0]['duration']['text'];
+//               distanceValue =
+//                   gDistanceApi['rows'][0]['elements'][0]['distance']['value'];
+//               originAddress = gDistanceApi['origin_addresses'][0].toString();
+//               durationValue =
+//                   gDistanceApi['rows'][0]['elements'][0]['duration']['value'];
+//             }
+//           }
 
-          print('distance: $distance');
-          print('duration: $duration');
-          // busList.add(Bus(
-          //   id: element.id,
-          //   name: element['name'],
-          //   location: geoPoint,
-          //   distance: distance,
-          //   duration: duration,
-          // ));
-          // print('list' + busList.length.toString());
-          // sort bus list by distance
-          busList.value
-              .sort((a, b) => a.distanceInMeters.compareTo(b.distanceInMeters));
+//           print('distance: $distance');
+//           print('duration: $duration');
+//           // busList.add(Bus(
+//           //   id: element.id,
+//           //   name: element['name'],
+//           //   location: geoPoint,
+//           //   distance: distance,
+//           //   duration: duration,
+//           // ));
+//           // print('list' + busList.length.toString());
+//           // sort bus list by distance
+//           busList.value
+//               .sort((a, b) => a.distanceInMeters.compareTo(b.distanceInMeters));
 
-          busList.value.removeWhere((element) => element.id == event.id);
-          busList.value.add(BusModel(
-            id: event.id,
-            name: event['name'],
-            location: geoPoint,
-            // distance: distance,
-            // duration: duration,
-            distanceInMeters: distanceValue,
-            address: originAddress,
-            durationInSeconds: durationValue,
-            line: event['line'],
-          ));
-          print('list' + busList.value.length.toString());
-        } catch (e) {
-          // Fluttertoast.showToast(msg: 'Error: $e');
-          print(e);
-        }
-      });
+//           busList.value.removeWhere((element) => element.id == event.id);
+//           busList.value.add(BusModel(
+//             id: event.id,
+//             name: event['name'],
+//             location: geoPoint,
+//             // distance: distance,
+//             // duration: duration,
+//             distanceInMeters: distanceValue,
+//             address: originAddress,
+//             durationInSeconds: durationValue,
+//             line: event['line'],
+//           ));
+//           print('list' + busList.value.length.toString());
+//         } catch (e) {
+//           // Fluttertoast.showToast(msg: 'Error: $e');
+//           print(e);
+//         }
+//       });
 
-      // addBusMarker(element.id, LatLng(geoPoint.latitude, geoPoint.longitude));
-      // when complete sort bus list
-    }
-    await Future.delayed(const Duration(seconds: 1));
-    await getDistanceDuration();
-    for (var i = 0; i < busList.value.length; i++) {
-      print('busList: ${busList.value[i].name}');
-      print('busList: ${busList.value[i].getDistance()}');
-      print('busList: ${busList.value[i].getDuration()}');
-      busList.value[i].startTimer();
-    }
-  });
-}
+//       // addBusMarker(element.id, LatLng(geoPoint.latitude, geoPoint.longitude));
+//       // when complete sort bus list
+//     }
+//     await Future.delayed(const Duration(seconds: 1));
+//     await getDistanceDuration();
+//     for (var i = 0; i < busList.value.length; i++) {
+//       print('busList: ${busList.value[i].name}');
+//       print('busList: ${busList.value[i].getDistance()}');
+//       print('busList: ${busList.value[i].getDuration()}');
+//       busList.value[i].startTimer();
+//     }
+//   });
+// }
 
 Future<void> getBusList() async {
   isLogin

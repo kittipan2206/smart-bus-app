@@ -38,19 +38,21 @@ dependencies:
   cupertino_icons: ^1.0.2
   shared_preferences: ^2.0.16
   google_maps_flutter: ^2.2.3
-  flutter_map: ^3.1.0
-  location: ^4.4.0
+  flutter_map: ^5.0.0
+  location: ^5.0.3
   firebase_core: ^2.4.1
   firebase_auth: ^4.2.2
   cloud_firestore: ^4.3.1
-  google_maps_flutter_web: ^0.4.0+5
+  google_maps_flutter_web: ^0.5.4+1
   fluttertoast: ^8.1.2
-  google_sign_in: ^5.4.4
+  google_sign_in: ^6.1.5
   flutter_native_splash: ^2.2.19
   lottie: ^2.3.0
   get: ^4.6.5
   dio: ^5.3.2
   carousel_slider: ^4.2.1
+  maps_launcher: ^2.2.0
+  photo_view: ^0.14.0
 
 dev_dependencies:
   flutter_test:

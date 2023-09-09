@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:smart_bus/common/core/app_variables.dart';
 import 'package:smart_bus/firebase_options.dart';
@@ -9,8 +10,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:smart_bus/globals.dart';
 import 'package:smart_bus/model/bus_model.dart';
+import 'package:smart_bus/presentation/pages/home/controller/bus_controller.dart';
 
 class FirebaseServices {
+  // get bus controller
+  static BusController busController = Get.put(BusController());
   static void updateFirebaseBusLocation(busDriverUID) async {
     // update bus location where field owner is busDriverUID
     await FirebaseFirestore.instance
@@ -118,9 +122,10 @@ class FirebaseServices {
             //   duration: duration,
             // ));
             // print('list' + busList.value.length.toString());
-            // sort bus list by distance
-            busList.value.sort(
-                (a, b) => a.distanceInMeters.compareTo(b.distanceInMeters));
+            // sort bus list by order
+            // busList.value.sort(
+            //     (a, b) => a.distanceInMeters.compareTo(b.distanceInMeters));
+            // busList.value.sort((a, b) =>
 
             busList.value.removeWhere((element) => element.id == event.id);
             busList.value.add(BusModel(
@@ -134,7 +139,24 @@ class FirebaseServices {
               durationInSeconds: durationValue,
               line: event['line'],
             ));
-            print('list' + busList.value.length.toString());
+            // for loop to get bus line
+            for (var i = 0; i < busList.value.length; i++) {
+              for (var j = 0; j < busList.value[i].line['line'].length; j++) {
+                if (busController.busLineList
+                    .contains(busList.value[i].line['line'][j])) {
+                  continue;
+                }
+                busController.busLineList.add(busList.value[i].line['line'][j]);
+              }
+            }
+
+            busList.value.sort((a, b) => a.line['order'][0]
+                .toString()
+                .compareTo(b.line['order'][0].toString()));
+
+            // busList.value.sort(
+            //     (a, b) => a.line['order'][0].compareTo(b.line['order'][0]));
+            // print('list' + busList.value.length.toString());
           } catch (e) {
             // Fluttertoast.showToast(msg: 'Error: $e');
             print(e);
@@ -147,9 +169,9 @@ class FirebaseServices {
       await Future.delayed(const Duration(seconds: 1));
       await getDistanceDuration();
       for (var i = 0; i < busList.value.length; i++) {
-        print('busList.value: ${busList.value[i].name}');
-        print('busList.value: ${busList.value[i].getDistance()}');
-        print('busList.value: ${busList.value[i].getDuration()}');
+        // print('busList.value: ${busList.value[i].name}');
+        // print('busList.value: ${busList.value[i].getDistance()}');
+        // print('busList.value: ${busList.value[i].getDuration()}');
         busList.value[i].startTimer();
       }
     });

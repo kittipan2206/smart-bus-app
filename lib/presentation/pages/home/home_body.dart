@@ -55,13 +55,13 @@ class HomeBody extends StatelessWidget {
           padding: EdgeInsets.all(20.0),
           child: Column(
             children: [
-              Row(
+              const Row(
                 children: [
-                  const ProfileImage(),
-                  const SizedBox(
+                  ProfileImage(),
+                  SizedBox(
                     width: 10,
                   ),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Welcome to Smart Bus'),
