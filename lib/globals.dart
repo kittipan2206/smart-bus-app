@@ -21,7 +21,7 @@ User? user;
 StreamController<BusModel> busStreamController = StreamController<BusModel>();
 // StreamController<bool> allBusStreamController = StreamController<bool>();
 // bus list
-Rx<List<BusModel>> busList = Rx<List<BusModel>>([]);
+RxList<BusModel> busStopList = <BusModel>[].obs;
 Location currentLocation = Location();
 BusModel? nearestBusStop;
 bool isStreamBusLocation = false;
@@ -263,7 +263,7 @@ Future<void> getDistanceDuration() async {
   Map<String, dynamic> jsonPayload = {
     "locations": [
       [userLatLng!.longitude, userLatLng!.latitude],
-      ...busList.value.map((e) => [e.location.longitude, e.location.latitude])
+      ...busStopList.map((e) => [e.location.longitude, e.location.latitude])
     ],
     "metrics": ["distance", "duration"],
     "resolve_locations": "true",
@@ -286,19 +286,19 @@ Future<void> getDistanceDuration() async {
     if (response.statusCode == 200) {
       var output = json.decode(response.body);
       print(output);
-      for (int i = 0; i < busList.value.length; i++) {
+      for (int i = 0; i < busStopList.length; i++) {
         // duration unit is second
         int rawDuration = output['durations'][0][i + 1].toInt() + 1;
-        busList.value[i].durationInSeconds = rawDuration;
+        busStopList[i].durationInSeconds = rawDuration;
         // distance unit is meter
         int rawDistance = output['distances'][0][i + 1].toInt() + 1;
-        busList.value[i].distanceInMeters = rawDistance;
-        busList.value[i].address =
+        busStopList[i].distanceInMeters = rawDistance;
+        busStopList[i].address =
             output['destinations'][i + 1]['name'] ?? 'unknown';
       }
-      busList.value
+      busStopList
           .sort((a, b) => a.distanceInMeters.compareTo(b.distanceInMeters));
-      busStreamController.add(busList.value.first);
+      busStreamController.add(busStopList.first);
     } else {
       print(response.statusCode);
       print(response.body);

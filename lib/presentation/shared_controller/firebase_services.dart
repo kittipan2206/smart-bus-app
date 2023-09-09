@@ -75,6 +75,7 @@ class FirebaseServices {
 
   static Future<void> streamBusLocation() async {
     print('streamBusLocation');
+    getBusLine();
     await FirebaseFirestore.instance
         .collection('bus_stop_data')
         .get()
@@ -114,45 +115,27 @@ class FirebaseServices {
 
             print('distance: $distance');
             print('duration: $duration');
-            // busList.value.add(Bus(
-            //   id: element.id,
-            //   name: element['name'],
-            //   location: geoPoint,
-            //   distance: distance,
-            //   duration: duration,
-            // ));
-            // print('list' + busList.value.length.toString());
-            // sort bus list by order
-            // busList.value.sort(
-            //     (a, b) => a.distanceInMeters.compareTo(b.distanceInMeters));
-            // busList.value.sort((a, b) =>
 
-            busList.value.removeWhere((element) => element.id == event.id);
-            busList.value.add(BusModel(
+            busStopList.removeWhere((element) => element.id == event.id);
+            busStopList.add(BusModel(
               id: event.id,
               name: event['name'],
               location: geoPoint,
-              // distance: distance,
-              // duration: duration,
               distanceInMeters: distanceValue,
               address: originAddress,
               durationInSeconds: durationValue,
               line: event['line'],
             ));
             // for loop to get bus line
-            for (var i = 0; i < busList.value.length; i++) {
-              for (var j = 0; j < busList.value[i].line['line'].length; j++) {
-                if (busController.busLineList
-                    .contains(busList.value[i].line['line'][j])) {
-                  continue;
-                }
-                busController.busLineList.add(busList.value[i].line['line'][j]);
-              }
-            }
-
-            busList.value.sort((a, b) => a.line['order'][0]
-                .toString()
-                .compareTo(b.line['order'][0].toString()));
+            // for (var i = 0; i < busStopList.length; i++) {
+            //   for (var j = 0; j < busStopList[i].line['line'].length; j++) {
+            //     if (busController.busLineList
+            //         .contains(busStopList[i].line['line'][j])) {
+            //       continue;
+            //     }
+            //     busController.busLineList.add(busStopList[i].line['line'][j]);
+            //   }
+            // }
 
             // busList.value.sort(
             //     (a, b) => a.line['order'][0].compareTo(b.line['order'][0]));
@@ -168,11 +151,29 @@ class FirebaseServices {
       }
       await Future.delayed(const Duration(seconds: 1));
       await getDistanceDuration();
-      for (var i = 0; i < busList.value.length; i++) {
+      for (var i = 0; i < busStopList.length; i++) {
         // print('busList.value: ${busList.value[i].name}');
         // print('busList.value: ${busList.value[i].getDistance()}');
         // print('busList.value: ${busList.value[i].getDuration()}');
-        busList.value[i].startTimer();
+        busStopList[i].startTimer();
+      }
+    });
+  }
+
+  static Future<void> getBusLine() async {
+    FirebaseFirestore.instance.collection('bus_line').get().then((value) async {
+      for (var element in value.docs) {
+        FirebaseFirestore.instance
+            .collection('bus_line')
+            .doc(element.id)
+            .snapshots()
+            .listen((event) async {
+          busController.busLineList.removeAt(busController.busLineList.indexOf(
+              busController.busLineList
+                  .firstWhere((element) => element["Id"] == event.id)));
+          busController.busLineList.add(event.data());
+          print('busLineList: ${busController.busLineList}');
+        });
       }
     });
   }

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:smart_bus/common/extensions/list_extensions.dart';
 import 'package:smart_bus/common/style/app_colors.dart';
 import 'package:smart_bus/globals.dart';
 import 'package:smart_bus/presentation/pages/home/controller/bus_controller.dart';
 import 'package:maps_launcher/maps_launcher.dart';
-import 'package:photo_view/photo_view.dart';
+// import 'package:photo_view/photo_view.dart';
 import 'package:smart_bus/presentation/pages/home/image_viewer_page.dart';
 
 class BusList extends StatelessWidget {
@@ -32,9 +33,9 @@ class BusList extends StatelessWidget {
               itemCount: busController.busLineList.length,
               physics: const NeverScrollableScrollPhysics(),
               itemBuilder: (context, index) {
-                final busStopInLine = busList.value
+                final busStopInLine = busStopList
                     .where((element) => element.line['line']
-                        .contains(busController.busLineList[index]))
+                        .contains(busController.busLineList[index]["Id"]))
                     .toList();
                 return ExpansionTile(
                   tilePadding: const EdgeInsets.all(15),
@@ -49,17 +50,19 @@ class BusList extends StatelessWidget {
                   ),
                   collapsedTextColor: Colors.white,
                   textColor: Colors.black,
-                  // if it has decimal, split it and get the first one
                   title: Text(
-                      "Line ${busController.busLineList[index].toString().split('.')[0]} ${busController.busLineList[index].toString().split('.').length > 1 ? "Route ${busController.busLineList[index].toString().split('.')[1]}" : ''}",
+                      busController.busLineList[index]["name"].toString(),
                       style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                          "${busStopInLine[0].name} -> ${busStopInLine[busStopInLine.length - 1].name}")
+                      if (busStopInLine.isNotEmpty)
+                        Text(
+                            "${busStopInLine[0].name} -> ${busStopInLine[busStopInLine.length - 1].name}")
+                      else
+                        const Text("No bus stop"),
 
-                      // Text("Nearest bus stop: ${busList.value[0].name}",
+                      // Text("Nearest bus stop: ${busList[0].name}",
                       //     style: const TextStyle(
                       //         fontWeight: FontWeight.bold, color: AppColors.orange)),
                     ],
@@ -71,18 +74,21 @@ class BusList extends StatelessWidget {
                       ),
                       child: Obx(() {
                         // sort bus list by order
+                        final busStopInLine = busStopList
+                            .where((element) => element.line['line'].contains(
+                                busController.busLineList[index]["Id"]))
+                            .toList();
 
                         var nearest = 0;
-                        for (var i = 0; i < busList.value.length; i++) {
-                          if (busList.value[i].distanceInMeters <
-                              busList.value[nearest].distanceInMeters) {
-                            nearest = i;
+                        for (var i = 0; i < busStopInLine.length; i++) {
+                          if (busStopInLine[i].distanceInMeters <
+                              busStopInLine[nearest].distanceInMeters) {
+                            busStopInLine[i].distanceInMeters != 0
+                                ? nearest = i
+                                : nearest = nearest;
                           }
                         }
-                        final busStopInLine = busList.value
-                            .where((element) => element.line['line']
-                                .contains(busController.busLineList[index]))
-                            .toList();
+
                         return Column(
                           children: [
                             const SizedBox(
@@ -90,7 +96,7 @@ class BusList extends StatelessWidget {
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Row(
+                              child: Column(
                                 // mainAxisAlignment: MainAxisAlignment.spaceAround,
                                 children: [
                                   Text(
@@ -98,58 +104,79 @@ class BusList extends StatelessWidget {
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold),
                                   ),
-                                  Expanded(
-                                    child: Text(
-                                      "Nearest bus stop: ${busStopInLine[nearest].name}",
-                                      textAlign: TextAlign.end,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.orange,
-                                      ),
+                                  Text(
+                                    "Nearest bus stop: ${busStopInLine[nearest].name}",
+                                    textAlign: TextAlign.end,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.orange,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                             // show image button
-                            FilledButton(
-                                onPressed: () {
-                                  Get.to(() => const ImageViewerPage(
-                                      imageUrl:
-                                          "https://img.wongnai.com/p/800x0/2020/08/07/f20e7e06eaba4904b3016a22f2872188.jpg"));
+                            GestureDetector(
+                                onTap: () {
+                                  Get.to(() => ImageViewerPage(
+                                      imageUrl: busController.busLineList[index]
+                                          ["image"]));
                                 },
-                                child: const Text('Show line map')),
+                                child: Image.network(
+                                  busController.busLineList[index]["image"],
+                                  height: 200,
+                                  width: 200,
+                                  fit: BoxFit.cover,
+                                )),
 
                             ListView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: busStopInLine.length,
-                              itemBuilder: (context, index) {
+                              itemBuilder: (context, indexInLine) {
+                                // order bus stop in line
+                                final lineIndex =
+                                    busStopInLine[indexInLine].line['line'][
+                                        busStopInLine[indexInLine]
+                                            .line['line']
+                                            .indexOf(busController
+                                                .busLineList[index]["Id"])];
+
+                                busStopInLine.sortBy((item) =>
+                                    item.line['order']
+                                        [item.line['line'].indexOf(lineIndex)]);
                                 return ListTile(
                                   leading: CircleAvatar(
-                                    backgroundColor: nearest == index
+                                    backgroundColor: nearest == indexInLine
                                         ? AppColors.orange
                                         : Colors.grey,
                                     foregroundColor: Colors.white,
-                                    child: Text(
-                                      busStopInLine[index]
-                                          .line['order'][0]
-                                          .toString(),
-                                    ),
+                                    child: Text(busStopInLine[indexInLine]
+                                        .line['order'][
+                                            // bus stop in line has array of line [1] or [1, 2] map with bus line list
+                                            busStopInLine[indexInLine]
+                                                .line['line']
+                                                .indexOf(busController
+                                                    .busLineList[index]["Id"])]
+                                        // .indexOf(busStopList[index])
+                                        .toString()),
                                   ),
                                   title: Text(
-                                    busStopInLine[index].name,
+                                    busStopInLine[indexInLine].name,
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold),
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  subtitle: Text(busStopInLine[index].address),
+                                  subtitle:
+                                      Text(busStopInLine[indexInLine].address),
                                   trailing: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text(busStopInLine[index].getDistance()),
-                                      Text(busStopInLine[index].getDuration()),
+                                      Text(busStopInLine[indexInLine]
+                                          .getDistance()),
+                                      Text(busStopInLine[indexInLine]
+                                          .getDuration()),
                                     ],
                                   ),
                                   onTap: () {
@@ -165,7 +192,7 @@ class BusList extends StatelessWidget {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              "Name: ${busStopInLine[index].name}",
+                                              "Name: ${busStopInLine[indexInLine].name}",
                                               style: const TextStyle(
                                                   color: Colors.black54),
                                             ),
@@ -173,7 +200,7 @@ class BusList extends StatelessWidget {
                                               height: 10,
                                             ),
                                             Text(
-                                              "Address: ${busStopInLine[index].address}",
+                                              "Address: ${busStopInLine[indexInLine].address}",
                                               style: const TextStyle(
                                                   color: Colors.black54),
                                             ),
@@ -181,7 +208,7 @@ class BusList extends StatelessWidget {
                                               height: 10,
                                             ),
                                             Text(
-                                              "Distance: ${busStopInLine[index].getDistance()}",
+                                              "Distance: ${busStopInLine[indexInLine].getDistance()}",
                                               style: const TextStyle(
                                                   color: Colors.black54),
                                             ),
@@ -189,7 +216,7 @@ class BusList extends StatelessWidget {
                                               height: 10,
                                             ),
                                             Text(
-                                              "Duration: ${busStopInLine[index].getDuration()}",
+                                              "Duration: ${busStopInLine[indexInLine].getDuration()}",
                                               style: const TextStyle(
                                                   color: Colors.black54),
                                             ),
@@ -199,12 +226,13 @@ class BusList extends StatelessWidget {
                                             FilledButton(
                                               onPressed: () {
                                                 MapsLauncher.launchCoordinates(
-                                                    busStopInLine[index]
-                                                        .location
-                                                        .latitude,
-                                                    busStopInLine[index]
-                                                        .location
-                                                        .longitude);
+                                                  busStopInLine[indexInLine]
+                                                      .location
+                                                      .latitude,
+                                                  busStopInLine[indexInLine]
+                                                      .location
+                                                      .longitude,
+                                                );
                                                 // MapsLauncher.createCoordinatesUri(
                                                 //     busStopInLine[index].location
                                                 //         .latitude,
@@ -213,8 +241,8 @@ class BusList extends StatelessWidget {
                                                 // MapsLauncher.launchQuery(
                                                 //     busStopInLine[index].name);
                                               },
-                                              child: Center(
-                                                child: const Row(
+                                              child: const Center(
+                                                child: Row(
                                                   mainAxisSize:
                                                       MainAxisSize.min,
                                                   children: [
@@ -254,10 +282,10 @@ class BusList extends StatelessWidget {
         // ExpansionPanelList(
         //   expansionCallback: (int index, bool isExpanded) {
         //     // setState(() {
-        //     //   busList.value[index].isExpanded = !isExpanded;
+        //     //   busList[index].isExpanded = !isExpanded;
         //     // });
         //   },
-        //   children: busList.value.map<ExpansionPanel>((BusModel bus) {
+        //   children: busList.map<ExpansionPanel>((BusModel bus) {
         //     return ExpansionPanel(
         //       headerBuilder: (BuildContext context, bool isExpanded) {
         //         return ListTile(
@@ -279,7 +307,7 @@ class BusList extends StatelessWidget {
         // ListView.builder(
         //   shrinkWrap: true,
         //   physics: const NeverScrollableScrollPhysics(),
-        //   itemCount: busList.value.length,
+        //   itemCount: busList.length,
         //   itemBuilder: (context, index) {
         //     return Card(
         //       shape: RoundedRectangleBorder(
@@ -287,13 +315,13 @@ class BusList extends StatelessWidget {
         //       ),
         //       child: ListTile(
         //         leading: const Icon(Icons.directions_bus),
-        //         title: Text(busList.value[index].name),
-        //         subtitle: Text(busList.value[index].address),
+        //         title: Text(busList[index].name),
+        //         subtitle: Text(busList[index].address),
         //         trailing: Column(
         //           mainAxisAlignment: MainAxisAlignment.center,
         //           children: [
-        //             Text(busList.value[index].getDistance()),
-        //             Text(busList.value[index].getDuration()),
+        //             Text(busList[index].getDistance()),
+        //             Text(busList[index].getDuration()),
         //           ],
         //         ),
         //         onTap: () {},
