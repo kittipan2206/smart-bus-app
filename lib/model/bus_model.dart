@@ -1,67 +1,60 @@
-import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:smart_bus/globals.dart';
 
 class BusModel {
-  // don't use same id for two buses
   String id;
-  String name;
-  GeoPoint location;
-  // bool status = false;
-  int distanceInMeters;
-  String address;
-  int durationInSeconds;
-  Map line;
+  String? name;
+  String? licensePlate;
+  dynamic busStopLine;
+  GeoPoint? location;
+  String? owner;
+  bool? status;
+  String? nextBusStop;
+  bool? onward;
+  Map? matrix;
 
   BusModel({
     required this.id,
-    required this.name,
-    required this.location,
-    status,
-    // required this.distance,
-    // required this.duration,
-    required this.distanceInMeters,
-    required this.address,
-    required this.durationInSeconds,
-    required this.line,
+    this.name,
+    this.licensePlate,
+    this.busStopLine,
+    this.location,
+    this.owner,
+    this.status,
+    this.nextBusStop,
+    this.onward,
+    this.matrix,
   });
 
-  // count down timer
-  void startTimer() {
-    Timer? timer;
-
-    const oneSec = Duration(seconds: 1);
-    timer = Timer.periodic(
-      oneSec,
-      (Timer timer) => {
-        if (durationInSeconds > 0)
-          {
-            durationInSeconds = durationInSeconds - 1,
-          }
-        else
-          {timer.cancel(), getDistanceDuration()}
-      },
+  factory BusModel.fromJson(Map<String, dynamic> json) {
+    return BusModel(
+      id: json['documentId'],
+      name: json['name'],
+      licensePlate: json['LP'],
+      busStopLine: json['bus_stop_line'],
+      location: json['location'],
+      owner: json['owner'],
+      status: json['status'],
+      nextBusStop: json['nextBusStop'],
+      onward: json['onward'],
+      matrix: json['matrix'],
     );
   }
 
-  // convert distance in meters to distance string
-  String getDistance() {
-    if (distanceInMeters < 1000) {
-      return '$distanceInMeters m';
-    } else {
-      return '${(distanceInMeters / 1000).toStringAsFixed(1)} km';
-    }
-  }
+  Map<String, dynamic> toJson() => {
+        'documentId': id,
+        'name': name,
+        'LP': licensePlate,
+        'busStopLine': busStopLine,
+        'location': location,
+        'owner': owner,
+        'status': status,
+        'nextBusStop': nextBusStop,
+        'onward': onward,
+        'matrix': matrix,
+      };
 
-  // convert duration in seconds to duration string
-  String getDuration() {
-    if (durationInSeconds < 60) {
-      return '$durationInSeconds s';
-    } else if (durationInSeconds < 3600) {
-      return '${(durationInSeconds / 60).toStringAsFixed(0)} min';
-    } else {
-      return '${(durationInSeconds / 3600).toStringAsFixed(0)} hours';
-    }
+  @override
+  String toString() {
+    return 'BusModel{id: $id, name: $name, licensePlate: $licensePlate, busStopLine: $busStopLine, location: $location, owner: $owner, status: $status, nextBusStop: $nextBusStop, onward: $onward, matrix: $matrix}';
   }
 }

@@ -10,11 +10,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:smart_bus/globals.dart';
 import 'package:smart_bus/model/bus_model.dart';
+import 'package:smart_bus/model/bus_stop_model.dart';
 import 'package:smart_bus/presentation/pages/home/controller/bus_controller.dart';
 
 class FirebaseServices {
   // get bus controller
-  static BusController busController = Get.put(BusController());
+  static BusController busController = Get.find<BusController>();
   static void updateFirebaseBusLocation(busDriverUID) async {
     // update bus location where field owner is busDriverUID
     await FirebaseFirestore.instance
@@ -50,8 +51,10 @@ class FirebaseServices {
                     .doc(element.id)
                     .get()
                     .then((value) async {
-                  allBusList.add(value.data()!);
-                  print('allBusList: ${allBusList}');
+                  // remove old bus
+                  busList.removeWhere((element) => element.id == value.id);
+                  busList.add(BusModel.fromJson(value.data()!));
+                  print('allBusList: ${busList.toString()}');
                 });
               }
             },
@@ -64,9 +67,11 @@ class FirebaseServices {
                     .doc(element.id)
                     .snapshots()
                     .listen((event) async {
-                  allBusList.add(event.data()!);
+                  // remove old bus
+                  busList.removeWhere((element) => element.id == event.id);
+                  busList.add(BusModel.fromJson(event.data()!));
 
-                  print('allBusList: ${allBusList}');
+                  print('allBusList: ${busList}');
                 });
               }
             },
@@ -117,7 +122,7 @@ class FirebaseServices {
             print('duration: $duration');
 
             busStopList.removeWhere((element) => element.id == event.id);
-            busStopList.add(BusModel(
+            busStopList.add(BusStopModel(
               id: event.id,
               name: event['name'],
               location: geoPoint,
@@ -167,10 +172,11 @@ class FirebaseServices {
             .collection('bus_line')
             .doc(element.id)
             .snapshots()
-            .listen((event) async {
-          busController.busLineList.removeAt(busController.busLineList.indexOf(
-              busController.busLineList
-                  .firstWhere((element) => element["Id"] == event.id)));
+            .listen((event) {
+          // remove old bus
+          print(event.id);
+          busController.busLineList
+              .removeWhere((element) => element["Id"] == event.data()!["Id"]);
           busController.busLineList.add(event.data());
           print('busLineList: ${busController.busLineList}');
         });

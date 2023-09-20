@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:get/get.dart';
 import 'package:smart_bus/firebase_options.dart';
 import 'package:smart_bus/globals.dart';
+import 'package:smart_bus/presentation/pages/home/controller/bus_controller.dart';
 import 'package:smart_bus/presentation/shared_controller/firebase_services.dart';
 // import 'package:smart_bus/presentation/shared_controller/location_controller.dart';
 
@@ -8,10 +10,12 @@ import 'package:smart_bus/presentation/shared_controller/firebase_services.dart'
 
 Future<void> setUp() async {
   await getCurrentLocation();
+  Get.put(BusController());
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await FirebaseServices.streamBusLocation();
+  await FirebaseServices.getBusList();
   // getIt
   //   ..registerSingleton(ApiClient())
   //   ..registerSingleton(Database(isar))

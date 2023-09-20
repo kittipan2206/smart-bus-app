@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 import 'package:smart_bus/common/extensions/list_extensions.dart';
 import 'package:smart_bus/common/style/app_colors.dart';
 import 'package:smart_bus/globals.dart';
+import 'package:smart_bus/presentation/pages/home/components/bus_info_dialog.dart';
 import 'package:smart_bus/presentation/pages/home/controller/bus_controller.dart';
-import 'package:maps_launcher/maps_launcher.dart';
 // import 'package:photo_view/photo_view.dart';
 import 'package:smart_bus/presentation/pages/home/image_viewer_page.dart';
 
@@ -20,9 +20,11 @@ class BusList extends StatelessWidget {
           height: 10,
         ),
         const Text(
-          "Bus List",
+          "Bus line list",
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
+        // lottie animation
+
         const SizedBox(
           height: 10,
         ),
@@ -68,211 +70,144 @@ class BusList extends StatelessWidget {
                     ],
                   ),
                   children: [
-                    Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25.0),
-                      ),
-                      child: Obx(() {
-                        // sort bus list by order
-                        final busStopInLine = busStopList
-                            .where((element) => element.line['line'].contains(
-                                busController.busLineList[index]["Id"]))
-                            .toList();
+                    if (busStopInLine.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 20, bottom: 20),
+                        child: Text("No bus stop"),
+                      )
+                    else
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25.0),
+                        ),
+                        child: Obx(() {
+                          // sort bus list by order
+                          final busStopInLine = busStopList
+                              .where((element) => element.line['line'].contains(
+                                  busController.busLineList[index]["Id"]))
+                              .toList();
 
-                        var nearest = 0;
-                        for (var i = 0; i < busStopInLine.length; i++) {
-                          if (busStopInLine[i].distanceInMeters <
-                              busStopInLine[nearest].distanceInMeters) {
-                            busStopInLine[i].distanceInMeters != 0
-                                ? nearest = i
-                                : nearest = nearest;
+                          var nearest = 0;
+                          for (var i = 0; i < busStopInLine.length; i++) {
+                            if (busStopInLine[i].distanceInMeters <
+                                busStopInLine[nearest].distanceInMeters) {
+                              busStopInLine[i].distanceInMeters != 0
+                                  ? nearest = i
+                                  : nearest = nearest;
+                            }
                           }
-                        }
 
-                        return Column(
-                          children: [
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                // mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                children: [
-                                  Text(
-                                    "Bus stop list: ${busStopInLine.length} stops",
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    "Nearest bus stop: ${busStopInLine[nearest].name}",
-                                    textAlign: TextAlign.end,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.orange,
-                                    ),
-                                  ),
-                                ],
+                          return Column(
+                            children: [
+                              const SizedBox(
+                                height: 10,
                               ),
-                            ),
-                            // show image button
-                            GestureDetector(
-                                onTap: () {
-                                  Get.to(() => ImageViewerPage(
-                                      imageUrl: busController.busLineList[index]
-                                          ["image"]));
-                                },
-                                child: Image.network(
-                                  busController.busLineList[index]["image"],
-                                  height: 200,
-                                  width: 200,
-                                  fit: BoxFit.cover,
-                                )),
-
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: busStopInLine.length,
-                              itemBuilder: (context, indexInLine) {
-                                // order bus stop in line
-                                final lineIndex =
-                                    busStopInLine[indexInLine].line['line'][
-                                        busStopInLine[indexInLine]
-                                            .line['line']
-                                            .indexOf(busController
-                                                .busLineList[index]["Id"])];
-
-                                busStopInLine.sortBy((item) =>
-                                    item.line['order']
-                                        [item.line['line'].indexOf(lineIndex)]);
-                                return ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: nearest == indexInLine
-                                        ? AppColors.orange
-                                        : Colors.grey,
-                                    foregroundColor: Colors.white,
-                                    child: Text(busStopInLine[indexInLine]
-                                        .line['order'][
-                                            // bus stop in line has array of line [1] or [1, 2] map with bus line list
-                                            busStopInLine[indexInLine]
-                                                .line['line']
-                                                .indexOf(busController
-                                                    .busLineList[index]["Id"])]
-                                        // .indexOf(busStopList[index])
-                                        .toString()),
-                                  ),
-                                  title: Text(
-                                    busStopInLine[indexInLine].name,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  subtitle:
-                                      Text(busStopInLine[indexInLine].address),
-                                  trailing: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(busStopInLine[indexInLine]
-                                          .getDistance()),
-                                      Text(busStopInLine[indexInLine]
-                                          .getDuration()),
-                                    ],
-                                  ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Text(
+                                      "Bus stop list: ${busStopInLine.length} stops",
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      "Nearest bus stop: ${busStopInLine[nearest].name}",
+                                      textAlign: TextAlign.end,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.orange,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // show image button
+                              GestureDetector(
                                   onTap: () {
-                                    Get.dialog(
-                                      AlertDialog.adaptive(
-                                        title:
-                                            const Text('Bus stop information'),
-                                        content: Column(
-                                          mainAxisSize: MainAxisSize.min,
+                                    Get.to(() => ImageViewerPage(
+                                        imageUrl: busController
+                                            .busLineList[index]["image"]));
+                                  },
+                                  child: Image.network(
+                                    busController.busLineList[index]["image"],
+                                    height: 200,
+                                    width: 200,
+                                    fit: BoxFit.cover,
+                                  )),
+
+                              ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: busStopInLine.length,
+                                itemBuilder: (context, indexInLine) {
+                                  // order bus stop in line
+                                  final lineIndex =
+                                      busStopInLine[indexInLine].line['line'][
+                                          busStopInLine[indexInLine]
+                                              .line['line']
+                                              .indexOf(busController
+                                                  .busLineList[index]["Id"])];
+
+                                  busStopInLine.sortBy((item) => item
+                                          .line['order']
+                                      [item.line['line'].indexOf(lineIndex)]);
+                                  return Obx(() => ListTile(
+                                        tileColor: selectedBusStopIndex.value ==
+                                                busStopList.indexOf(
+                                                    busStopInLine[indexInLine])
+                                            ? AppColors.lightBlue
+                                                .withOpacity(0.2)
+                                            : Colors.transparent,
+                                        leading: CircleAvatar(
+                                          backgroundColor:
+                                              nearest == indexInLine
+                                                  ? AppColors.orange
+                                                  : Colors.grey,
+                                          foregroundColor: Colors.white,
+                                          child: Text(busStopInLine[indexInLine]
+                                              .line['order'][
+                                                  // bus stop in line has array of line [1] or [1, 2] map with bus line list
+                                                  busStopInLine[indexInLine]
+                                                      .line['line']
+                                                      .indexOf(busController
+                                                              .busLineList[
+                                                          index]["Id"])]
+                                              // .indexOf(busStopList[index])
+                                              .toString()),
+                                        ),
+                                        title: Text(
+                                          busStopInLine[indexInLine].name,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        subtitle: Text(
+                                            busStopInLine[indexInLine].address),
+                                        trailing: Column(
                                           mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                              MainAxisAlignment.center,
                                           children: [
-                                            Text(
-                                              "Name: ${busStopInLine[indexInLine].name}",
-                                              style: const TextStyle(
-                                                  color: Colors.black54),
-                                            ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text(
-                                              "Address: ${busStopInLine[indexInLine].address}",
-                                              style: const TextStyle(
-                                                  color: Colors.black54),
-                                            ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text(
-                                              "Distance: ${busStopInLine[indexInLine].getDistance()}",
-                                              style: const TextStyle(
-                                                  color: Colors.black54),
-                                            ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            Text(
-                                              "Duration: ${busStopInLine[indexInLine].getDuration()}",
-                                              style: const TextStyle(
-                                                  color: Colors.black54),
-                                            ),
-                                            const SizedBox(
-                                              height: 10,
-                                            ),
-                                            FilledButton(
-                                              onPressed: () {
-                                                MapsLauncher.launchCoordinates(
-                                                  busStopInLine[indexInLine]
-                                                      .location
-                                                      .latitude,
-                                                  busStopInLine[indexInLine]
-                                                      .location
-                                                      .longitude,
-                                                );
-                                                // MapsLauncher.createCoordinatesUri(
-                                                //     busStopInLine[index].location
-                                                //         .latitude,
-                                                //     busStopInLine[index].location
-                                                //         .longitude);
-                                                // MapsLauncher.launchQuery(
-                                                //     busStopInLine[index].name);
-                                              },
-                                              child: const Center(
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Icon(Icons.directions),
-                                                    Text(
-                                                        "Navigate to this bus"),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
+                                            Text(busStopInLine[indexInLine]
+                                                .getDistance()),
+                                            Text(busStopInLine[indexInLine]
+                                                .getDuration()),
                                           ],
                                         ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () {
-                                              Get.back();
-                                            },
-                                            child: const Text('OK'),
-                                          )
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ],
-                        );
-                      }),
-                    ),
+                                        onTap: () {
+                                          Get.dialog(BusInfoDialog(
+                                              busStopInLine:
+                                                  busStopInLine[indexInLine]));
+                                        },
+                                      ));
+                                },
+                              ),
+                            ],
+                          );
+                        }),
+                      ),
                   ],
                 );
               },
