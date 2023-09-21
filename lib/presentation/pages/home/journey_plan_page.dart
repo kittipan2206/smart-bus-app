@@ -59,153 +59,158 @@ class _JourneyPlanPageState extends State<JourneyPlanPage> {
       appBar: AppBar(
         title: const Text('Journey Plan'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Column(
-                      children: [
-                        Icon(Icons.location_on, color: Colors.blue),
-                        Container(
-                          height: 50,
-                          width: 1,
-                          color: Colors.grey,
-                        ),
-                        Icon(Icons.location_on, color: Colors.red),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        TypeAheadFormField(
-                          textFieldConfiguration: TextFieldConfiguration(
-                            controller: startController,
-                            decoration: const InputDecoration(
-                              labelText: 'Location',
-                              border: OutlineInputBorder(),
-                            ),
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Column(
+                        children: [
+                          Icon(Icons.location_on, color: Colors.blue),
+                          Container(
+                            height: 50,
+                            width: 1,
+                            color: Colors.grey,
                           ),
-                          suggestionsCallback: (pattern) async {
-                            return await getSuggestions(pattern);
-                          },
-                          itemBuilder: (context, suggestion) {
-                            return ListTile(
-                              title: Text(suggestion.name),
-                              subtitle: Text(suggestion.address),
-                              trailing: IconButton(
-                                onPressed: () {
-                                  Get.dialog(
-                                    BusInfoDialog(busStopInLine: suggestion),
-                                  );
-                                },
-                                icon:
-                                    const Icon(Icons.info, color: Colors.blue),
-                              ),
-                              leading: Text(
-                                suggestion.line['line'].join(', '),
-                                style: const TextStyle(color: Colors.blue),
-                              ),
-                            );
-                          },
-                          onSuggestionSelected: (suggestion) {
-                            setState(() {
-                              startController.text = suggestion.name;
-                            });
-                          },
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter start location';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        TypeAheadFormField(
-                          textFieldConfiguration: TextFieldConfiguration(
-                            //
-                            controller: endController,
-                            decoration: const InputDecoration(
-                              labelText: 'Destination',
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          suggestionsCallback: (pattern) async {
-                            return await getSuggestions(pattern);
-                          },
-                          itemBuilder: (context, suggestion) {
-                            return ListTile(
-                              title: Text(suggestion.name),
-                              subtitle: Text(suggestion.address),
-                              trailing: IconButton(
-                                onPressed: () {
-                                  Get.dialog(
-                                    BusInfoDialog(busStopInLine: suggestion),
-                                  );
-                                },
-                                icon:
-                                    const Icon(Icons.info, color: Colors.blue),
-                              ),
-                              leading: Text(
-                                suggestion.line['line'].join(', '),
-                                style: const TextStyle(color: Colors.blue),
-                              ),
-                            );
-                          },
-                          onSuggestionSelected: (suggestion) {
-                            setState(() {
-                              endController.text = suggestion.name;
-                            });
-                          },
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter end location';
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
+                          Icon(Icons.location_on, color: Colors.red),
+                        ],
+                      ),
                     ),
-                  ),
-                  // nearest bus stop button
-                  Column(
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          nearestBusStop = busStopList.first;
-                          Fluttertoast.showToast(
-                              msg:
-                                  'Nearest bus stop is ${nearestBusStop!.name}');
-                          startController.text = nearestBusStop!.name;
-                        },
-                        icon: const Icon(Icons.near_me, color: Colors.blue),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          TypeAheadFormField(
+                            textFieldConfiguration: TextFieldConfiguration(
+                              controller: startController,
+                              decoration: const InputDecoration(
+                                labelText: 'Starting point',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            suggestionsCallback: (pattern) async {
+                              return await getSuggestions(pattern);
+                            },
+                            itemBuilder: (context, suggestion) {
+                              return ListTile(
+                                title: Text(suggestion.name),
+                                subtitle: Text(suggestion.address),
+                                trailing: IconButton(
+                                  onPressed: () {
+                                    Get.dialog(
+                                      BusInfoDialog(busStopInLine: suggestion),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.info,
+                                      color: Colors.blue),
+                                ),
+                                leading: Text(
+                                  suggestion.line['line'].join(', '),
+                                  style: const TextStyle(color: Colors.blue),
+                                ),
+                              );
+                            },
+                            onSuggestionSelected: (suggestion) {
+                              setState(() {
+                                startController.text = suggestion.name;
+                              });
+                            },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter start location';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          TypeAheadFormField(
+                            textFieldConfiguration: TextFieldConfiguration(
+                              controller: endController,
+                              decoration: const InputDecoration(
+                                labelText: 'Destination',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            suggestionsCallback: (pattern) async {
+                              return await getSuggestions(pattern);
+                            },
+                            itemBuilder: (context, suggestion) {
+                              return ListTile(
+                                title: Text(suggestion.name),
+                                subtitle: Text(suggestion.address),
+                                trailing: IconButton(
+                                  onPressed: () {
+                                    Get.dialog(
+                                      BusInfoDialog(busStopInLine: suggestion),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.info,
+                                      color: Colors.blue),
+                                ),
+                                leading: Text(
+                                  suggestion.line['line'].join(', '),
+                                  style: const TextStyle(color: Colors.blue),
+                                ),
+                              );
+                            },
+                            onSuggestionSelected: (suggestion) {
+                              setState(() {
+                                endController.text = suggestion.name;
+                              });
+                            },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter end location';
+                              }
+                              return null;
+                            },
+                          ),
+                        ],
                       ),
-                      Container(
-                        height: 20,
-                      ),
-                      IconButton(
+                    ),
+                    // nearest bus stop button
+                    Column(
+                      children: [
+                        IconButton(
                           onPressed: () {
-                            final temp = startController.text;
-                            startController.text = endController.text;
-                            endController.text = temp;
+                            nearestBusStop = busStopList.first;
+                            Fluttertoast.showToast(
+                                msg:
+                                    'Nearest bus stop is ${nearestBusStop!.name}');
+                            startController.text = nearestBusStop!.name;
                           },
-                          icon: const Icon(Icons.swap_vert, color: Colors.red)),
-                    ],
-                  ),
-                ],
-              ),
-              if (startController.text.isNotEmpty &&
-                  endController.text.isNotEmpty)
+                          icon: const Icon(Icons.near_me, color: Colors.blue),
+                        ),
+                        Container(
+                          height: 20,
+                        ),
+                        IconButton(
+                            onPressed: () {
+                              final temp = startController.text;
+                              startController.text = endController.text;
+                              endController.text = temp;
+                            },
+                            icon:
+                                const Icon(Icons.swap_vert, color: Colors.red)),
+                      ],
+                    ),
+                  ],
+                ),
+                if (startController.text.isNotEmpty &&
+                    endController.text.isNotEmpty)
+                  const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(100, 50),
+                      ),
                       onPressed: () {
                         // unfocus keyboard
                         FocusScope.of(context).unfocus();
@@ -221,46 +226,153 @@ class _JourneyPlanPageState extends State<JourneyPlanPage> {
                           setState(() {});
                         }
                       },
-                      child: Text('Search'),
+                      child: const Text('Search'),
                     ),
                   ],
                 ),
-              if (resultPath.isNotEmpty)
-                Expanded(
-                  child: ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: resultPath.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        onTap: () {
-                          Get.dialog(
-                            BusInfoDialog(busStopInLine: resultPath[index]),
-                          );
-                        },
-                        title: Text(resultPath[index].name),
-                        subtitle: Text(resultPath[index].address),
-                        leading: Container(
-                          padding: const EdgeInsets.all(5),
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: Text(
-                            resultPath[index].line['line'].join('to '),
-                            style: const TextStyle(color: AppColors.white),
-                          ),
+                if (resultPath.isNotEmpty)
+                  Column(
+                    children: [
+                      Text(
+                        'Shortest path: ${resultPath.length} stops',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
-                      );
-                    },
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'From ${resultPath.first.name} to ${resultPath.last.name}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const Row(
+                        children: [
+                          Text(
+                            'Bus stops line',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Text(
+                            'Detail',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Card(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: resultPath.length,
+                          itemBuilder: (context, index) {
+                            return Column(
+                              children: [
+                                ListTile(
+                                  onTap: () {
+                                    Get.dialog(
+                                      BusInfoDialog(
+                                          busStopInLine: resultPath[index]),
+                                    );
+                                  },
+                                  title: Text(resultPath[index].name),
+                                  subtitle: Text(resultPath[index].address),
+                                  leading: Column(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(5),
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue,
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                        ),
+                                        child: Text(
+                                          resultPath[index]
+                                              .line['line']
+                                              .join('to '),
+                                          style: const TextStyle(
+                                              color: AppColors.white),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      // arrow icon
+                                      if (index < resultPath.length - 1)
+                                        const Icon(Icons.arrow_downward),
+                                    ],
+                                  ),
+                                ),
+                                if (resultPath[index].line['line'].length > 1 &&
+                                    (resultPath[index - 1]
+                                            .line['line']
+                                            .join('to ') !=
+                                        resultPath[index + 1]
+                                            .line['line']
+                                            .join('to ')))
+                                  Container(
+                                    color: AppColors.orange,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        const Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Text(
+                                            'Change to',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                        Text(
+                                          resultPath[index + 1]
+                                                      .line['line']
+                                                      .join('to ')
+                                                      .toString()
+                                                      .split(".")
+                                                      .length >
+                                                  1
+                                              ? 'Line: ${resultPath[index + 1].line['line'].join('to ').toString().split('.')[0]} Route ${resultPath[index + 1].line['line'].join('to ').toString().split('.')[1]}'
+                                              : "Line: ${resultPath[index + 1].line['line'].join('to ')}",
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.black,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              if (resultPath.isEmpty)
-                const Expanded(
-                  child: Center(
-                    child: Text('No result'),
+                if (resultPath.isEmpty)
+                  Column(
+                    children: [
+                      const SizedBox(height: 10),
+                      const Text(
+                        'No result',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 500),
+                    ],
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
