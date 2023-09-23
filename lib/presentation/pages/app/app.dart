@@ -16,6 +16,8 @@ class App extends StatelessWidget {
       locale: Get.deviceLocale,
       fallbackLocale: const Locale('en', 'US'),
       theme: AppTheme.lightAppTheme,
+      // ios transition
+      defaultTransition: Transition.cupertino,
       unknownRoute: GetPage(
         name: '/not-found',
         page: () => const PageNotFound(),

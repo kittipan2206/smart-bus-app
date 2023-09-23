@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:smart_bus/common/style/app_colors.dart';
@@ -35,12 +36,18 @@ class HomeBody extends StatelessWidget {
     ];
 
     final List<Function()> onPresseds = [
-      () {},
       () {
-        Get.to(() => JourneyPlanPage());
+        Fluttertoast.showToast(msg: 'This feature is not available yet');
       },
-      () {},
-      () {},
+      () {
+        Get.to(() => const JourneyPlanPage());
+      },
+      () {
+        Fluttertoast.showToast(msg: 'This feature is not available yet');
+      },
+      () {
+        Fluttertoast.showToast(msg: 'This feature is not available yet');
+      },
     ];
 
     return SingleChildScrollView(

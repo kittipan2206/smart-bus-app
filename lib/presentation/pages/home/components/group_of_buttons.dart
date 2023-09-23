@@ -29,6 +29,7 @@ class GroupOfButtons extends StatelessWidget {
           ],
         ),
         child: GridView.count(
+          physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
           crossAxisCount: 4,
           children: children,

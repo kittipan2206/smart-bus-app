@@ -6,6 +6,7 @@ class AppTheme {
   AppTheme._();
 
   static ThemeData lightAppTheme = ThemeData(
+    fontFamilyFallback: const ['SanFrancisco'],
     primarySwatch: Colors.blue,
     scaffoldBackgroundColor: AppColors.white,
     searchBarTheme: const SearchBarThemeData(

@@ -91,14 +91,6 @@ class BusList extends StatelessWidget {
                                   .toList();
 
                               var nearest = 0;
-                              for (var i = 0; i < busStopInLine.length; i++) {
-                                if (busStopInLine[i].distanceInMeters <
-                                    busStopInLine[nearest].distanceInMeters) {
-                                  busStopInLine[i].distanceInMeters != 0
-                                      ? nearest = i
-                                      : nearest = nearest;
-                                }
-                              }
 
                               return Column(
                                 children: [
@@ -162,6 +154,17 @@ class BusList extends StatelessWidget {
                                       busStopInLine.sortBy((item) =>
                                           item.line['order'][item.line['line']
                                               .indexOf(lineIndex)]);
+                                      for (var i = 0;
+                                          i < busStopInLine.length;
+                                          i++) {
+                                        if (busStopInLine[i].distanceInMeters <
+                                            busStopInLine[nearest]
+                                                .distanceInMeters) {
+                                          busStopInLine[i].distanceInMeters != 0
+                                              ? nearest = i
+                                              : nearest = nearest;
+                                        }
+                                      }
                                       return Obx(() => ListTile(
                                             tileColor: selectedBusStopIndex
                                                         .value ==
