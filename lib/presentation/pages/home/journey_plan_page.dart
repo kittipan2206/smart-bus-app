@@ -21,6 +21,7 @@ class _JourneyPlanPageState extends State<JourneyPlanPage> {
   final endController = TextEditingController();
   List<BusStopModel> resultPath = [];
   bool isLoding = false;
+
   @override
   void initState() {
     super.initState();
@@ -412,36 +413,6 @@ class _JourneyPlanPageState extends State<JourneyPlanPage> {
                                                     ),
                                                   ),
                                                 ),
-
-                                                // Container(
-                                                //     padding:
-                                                //         const EdgeInsets.all(5),
-                                                //     decoration: BoxDecoration(
-                                                //         color: Color(busController
-                                                //                 .busLineList
-                                                //                 .firstWhere((e) =>
-                                                //                     e['Id'] ==
-                                                //                     resultPath[
-                                                //                             index +
-                                                //                                 1]
-                                                //                         .line[
-                                                //                             'line']
-                                                //                         .first)[
-                                                //             'color']),
-                                                //         borderRadius:
-                                                //             BorderRadius
-                                                //                 .circular(5)),
-                                                //     child: Text(
-                                                //       resultPath[index + 1]
-                                                //           .line['line']
-                                                //           .join(', '),
-                                                //       style: const TextStyle(
-                                                //           fontSize: 16,
-                                                //           fontWeight:
-                                                //               FontWeight.bold,
-                                                //           color:
-                                                //               AppColors.white),
-                                                //     ))
                                                 Text(
                                                   resultPath[index + 1].name,
                                                   style: const TextStyle(

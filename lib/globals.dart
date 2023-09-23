@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -167,21 +169,18 @@ Future<void> getDistanceDuration() async {
   };
 
   try {
-    print(jsonPayload);
     final response = await http.post(
       Uri.parse(url),
       headers: {
         "Content-Type": "application/json; charset=utf-8",
         "Accept":
             "application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8",
-        "Authorization":
-            "5b3ce3597851110001cf62482c216c56fdbe49f5a15841ad3a59b770"
+        "Authorization": dotenv.env['OPEN_ROUTE_SERVICE_API_KEY']!,
       },
       body: json.encode(jsonPayload),
     );
     if (response.statusCode == 200) {
       var output = json.decode(response.body);
-      print(output);
       for (int i = 0; i < busStopList.length; i++) {
         // duration unit is second
         int rawDuration = output['durations'][0][i + 1].toInt() + 1;
@@ -196,8 +195,7 @@ Future<void> getDistanceDuration() async {
           .sort((a, b) => a.distanceInMeters.compareTo(b.distanceInMeters));
       busStreamController.add(busStopList.first);
     } else {
-      print(response.statusCode);
-      print(response.body);
+      Fluttertoast.showToast(msg: 'Error: ${response.statusCode}');
     }
   } catch (e) {
     print(e);

@@ -55,6 +55,7 @@ dependencies:
   photo_view: ^0.14.0
   autocomplete_textfield: ^2.0.1
   flutter_typeahead: ^4.7.0
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -97,6 +98,7 @@ flutter:
     - assets/images/
     - assets/lottie/
     - assets/marker/
+    - .env
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
