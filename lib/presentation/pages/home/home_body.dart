@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -21,6 +23,16 @@ class HomeBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isLogin.value) {
+      // listen to user info
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .get()
+          .then((event) {
+        userInfo.value = event.data()!;
+      });
+    }
     // final isDriver = userInfo['roles'] == 'driver';
 
     // list of names and their icons
