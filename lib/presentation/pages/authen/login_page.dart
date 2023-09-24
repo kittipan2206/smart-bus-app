@@ -119,14 +119,14 @@ class _LoginPageState extends State<LoginPage> {
                           },
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            minimumSize: Size.fromHeight(50),
+                            minimumSize: const Size.fromHeight(50),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20.0),
                             ),
@@ -283,7 +283,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       Stack(
                         children: [
-                          Divider(
+                          const Divider(
                               // color: Colors.black,
                               ),
                           Center(
@@ -307,7 +307,7 @@ class _LoginPageState extends State<LoginPage> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => RegisterPage()));
+                                  builder: (context) => const RegisterPage()));
                         },
                         child: const Text('Register'),
                       ),
@@ -335,19 +335,19 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void signInWithGoogle() async {
-    GoogleSignIn _googleSignIn = GoogleSignIn(
+    GoogleSignIn googleSignIn = GoogleSignIn(
       scopes: [
         'email',
         'https://www.googleapis.com/auth/contacts.readonly',
       ],
     );
     try {
-      await _googleSignIn.signIn();
+      await googleSignIn.signIn();
       await FirebaseAuth.instance.signInWithCredential(
           GoogleAuthProvider.credential(
               idToken:
-                  (await _googleSignIn.currentUser!.authentication).idToken,
-              accessToken: (await _googleSignIn.currentUser!.authentication)
+                  (await googleSignIn.currentUser!.authentication).idToken,
+              accessToken: (await googleSignIn.currentUser!.authentication)
                   .accessToken));
     } catch (e) {
       Fluttertoast.showToast(msg: e.toString());

@@ -71,7 +71,7 @@ class FirebaseServices {
                   busList.removeWhere((element) => element.id == event.id);
                   busList.add(BusModel.fromJson(event.data()!));
 
-                  print('allBusList: ${busList}');
+                  print('allBusList: $busList');
                 });
               }
             },

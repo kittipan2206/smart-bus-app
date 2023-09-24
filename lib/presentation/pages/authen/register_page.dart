@@ -65,10 +65,10 @@ class _RegisterPageState extends State<RegisterPage> {
                         key: formKey,
                         child: Column(
                           children: <Widget>[
-                            Text('Driver Name',
+                            const Text('Driver Name',
                                 style: TextStyle(
                                     fontSize: 15, fontWeight: FontWeight.bold)),
-                            Divider(),
+                            const Divider(),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
@@ -108,8 +108,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                             ),
 
-                            Divider(),
-                            Text('Contact Details',
+                            const Divider(),
+                            const Text('Contact Details',
                                 style: TextStyle(
                                     fontSize: 15, fontWeight: FontWeight.bold)),
                             Padding(
@@ -260,7 +260,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       onPressed: () {
                                         _addBusDialog();
                                       },
-                                      child: Text('Add Bus')),
+                                      child: const Text('Add Bus')),
                                   const Text('You can also add bus later',
                                       style: TextStyle(
                                           fontSize: 15,
@@ -322,7 +322,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                 ],
                               ),
 
-                            SizedBox(
+                            const SizedBox(
                               height: 10,
                             ),
                             Padding(
@@ -489,9 +489,9 @@ class _RegisterPageState extends State<RegisterPage> {
     final TextEditingController busNameController = TextEditingController();
     final TextEditingController licensePlateController =
         TextEditingController();
-    String _busStopLine = '';
+    String busStopLine = '';
     BusController busController = Get.put(BusController());
-    final GlobalKey<FormState> _formKeyBus = GlobalKey<FormState>();
+    final GlobalKey<FormState> formKeyBus = GlobalKey<FormState>();
     if (bus != null) {
       busNameController.text = bus.name!;
       licensePlateController.text = bus.licensePlate!;
@@ -500,7 +500,7 @@ class _RegisterPageState extends State<RegisterPage> {
     Get.defaultDialog(
         title: 'Add Bus',
         content: Form(
-          key: _formKeyBus,
+          key: formKeyBus,
           child: Column(
             children: [
               TextFormField(
@@ -515,7 +515,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   return null;
                 },
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               TextFormField(
@@ -530,7 +530,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   return null;
                 },
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               DropdownButtonFormField(
@@ -542,7 +542,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   onChanged: (value) {
                     setState(() {
-                      _busStopLine = value.toString();
+                      busStopLine = value.toString();
                     });
                   },
                   items: [
@@ -555,8 +555,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   ]),
               ElevatedButton(
                   onPressed: () {
-                    if (_formKeyBus.currentState!.validate()) {
-                      if (_busStopLine == '') {
+                    if (formKeyBus.currentState!.validate()) {
+                      if (busStopLine == '') {
                         Fluttertoast.showToast(
                             msg: 'Please select bus stop line',
                             toastLength: Toast.LENGTH_SHORT,
@@ -575,7 +575,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           id: bus.id,
                           name: busNameController.text,
                           licensePlate: licensePlateController.text,
-                          busStopLine: _busStopLine,
+                          busStopLine: busStopLine,
                           // owner: user.value!.uid,
                           status: false,
                           onward: false,
@@ -585,7 +585,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           id: '',
                           name: busNameController.text,
                           licensePlate: licensePlateController.text,
-                          busStopLine: _busStopLine,
+                          busStopLine: busStopLine,
                           // owner: user.value!.uid,
                           status: false,
                           onward: false,

@@ -1,7 +1,3 @@
-import 'dart:ffi';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -70,7 +66,7 @@ class HomeBody extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
               Row(
@@ -102,7 +98,7 @@ class HomeBody extends StatelessWidget {
                                   ),
                                 ],
                               )
-                            : Text('Guest',
+                            : const Text('Guest',
                                 style: TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold)),
                       ],
@@ -305,7 +301,7 @@ class HomeBody extends StatelessWidget {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text(
+                                      const Text(
                                         'Next bus arrive in about',
                                         style: TextStyle(
                                           fontSize: 12,
@@ -314,12 +310,12 @@ class HomeBody extends StatelessWidget {
                                       Text(
                                         nearestDurationTime,
                                         // 'test',
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                             fontSize: 45,
                                             fontWeight: FontWeight.bold,
                                             color: AppColors.blue),
                                       ),
-                                      Text(
+                                      const Text(
                                         'View more',
                                         style: TextStyle(
                                             fontSize: 12,

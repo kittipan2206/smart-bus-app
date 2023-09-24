@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:smart_bus/common/style/app_colors.dart';
-import 'package:smart_bus/presentation/pages/app/app.dart';
 
 class GroupOfButtons extends StatelessWidget {
   const GroupOfButtons({

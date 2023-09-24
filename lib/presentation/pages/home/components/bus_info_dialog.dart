@@ -70,7 +70,7 @@ class BusInfoDialog extends StatelessWidget {
                               busStopList.indexOf(busStopInLine)
                           ? "Unfollow"
                           : "Follow",
-                      style: TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white),
                     )),
               ),
               FilledButton(

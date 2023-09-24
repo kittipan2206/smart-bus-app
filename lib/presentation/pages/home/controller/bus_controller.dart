@@ -5,13 +5,5 @@ class BusController extends GetxController {
   Rx<BusStopModel>? busModel;
   RxList busLineList = [].obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-  }
 
-  @override
-  void onClose() {
-    super.onClose();
-  }
 }

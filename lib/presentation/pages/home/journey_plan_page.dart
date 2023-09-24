@@ -97,13 +97,13 @@ class _JourneyPlanPageState extends State<JourneyPlanPage> {
                             padding: const EdgeInsets.symmetric(horizontal: 10),
                             child: Column(
                               children: [
-                                Icon(Icons.location_on, color: Colors.blue),
+                                const Icon(Icons.location_on, color: Colors.blue),
                                 Container(
                                   height: 50,
                                   width: 1,
                                   color: Colors.grey,
                                 ),
-                                Icon(Icons.location_on, color: Colors.red),
+                                const Icon(Icons.location_on, color: Colors.red),
                               ],
                             ),
                           ),

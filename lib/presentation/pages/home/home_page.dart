@@ -37,9 +37,9 @@ class HomePage extends StatelessWidget {
         body: Obx(
           () => IndexedStack(
             index: homeController.tabIndex.value,
-            children: [
+            children: const [
               HomeBody(),
-              const SettingPage(),
+              SettingPage(),
             ],
           ),
         ),

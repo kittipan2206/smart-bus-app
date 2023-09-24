@@ -31,29 +31,29 @@ Rx<bool> isStreamBusLocation = false.obs;
 RxList<BusModel> busList = <BusModel>[].obs;
 
 late LocationData _locationData;
-Rx<LatLng> userLatLng = LatLng(0, 0).obs;
+Rx<LatLng> userLatLng = const LatLng(0, 0).obs;
 Future<void> getCurrentLocation() async {
   Location location = Location();
-  bool _serviceEnabled;
-  PermissionStatus _permissionGranted;
+  bool serviceEnabled;
+  PermissionStatus permissionGranted;
   prefs = await SharedPreferences.getInstance();
 
   getGoogleApi = prefs!.getBool('googleDistanceMatrixAPI') ?? false;
   try {
-    _serviceEnabled = await location.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await location.requestService();
-      if (!_serviceEnabled) {
+    serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await location.requestService();
+      if (!serviceEnabled) {
         // show toast
         Fluttertoast.showToast(msg: 'Please enable location service');
         return;
       }
     }
 
-    _permissionGranted = await location.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await location.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) {
+    permissionGranted = await location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await location.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
         // show toast
         Fluttertoast.showToast(msg: 'Please enable location permission');
         return;
@@ -121,7 +121,7 @@ Future<void> getBusList() async {
                   .get()
                   .then((value) async {
                 busList.add(BusModel.fromJson(value.data()!));
-                print('allBusList: ${busList}');
+                print('allBusList: $busList');
               });
             }
           },
@@ -136,7 +136,7 @@ Future<void> getBusList() async {
                   .listen((event) async {
                 busList.add(BusModel.fromJson(event.data()!));
 
-                print('allBusList: ${busList}');
+                print('allBusList: $busList');
               });
             }
           },
@@ -147,7 +147,7 @@ Future<dynamic> getDistance({required LatLng busLatLng}) async {
   String url =
       'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${userLatLng.value.latitude},${userLatLng.value.longitude}&origins=${busLatLng.latitude},${busLatLng.longitude}&key=AIzaSyCaGjSBHkRCXtTB8u0H9yeErCPg6xDVLD8';
   try {
-    print("user lat long api get" + userLatLng.toString());
+    print("user lat long api get$userLatLng");
     var response = await http.get(
         Uri.parse(
           url,
@@ -159,8 +159,9 @@ Future<dynamic> getDistance({required LatLng busLatLng}) async {
         });
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
-    } else
+    } else {
       return null;
+    }
   } catch (e) {
     print(e);
     return null;

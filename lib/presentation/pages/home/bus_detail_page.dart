@@ -54,8 +54,8 @@ class BusDetailPage extends StatelessWidget {
               onPressed: () {
                 // Navigate to community page or show community details
               },
-              icon: Icon(Icons.people),
-              label: Text("Community"),
+              icon: const Icon(Icons.people),
+              label: const Text("Community"),
             ),
           ),
         ),
@@ -77,7 +77,7 @@ class BusDetailPage extends StatelessWidget {
           children: [
             Text(
               title,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18.0,
                 fontWeight: FontWeight.bold,
               ),

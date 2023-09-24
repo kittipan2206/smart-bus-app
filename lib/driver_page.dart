@@ -1,7 +1,6 @@
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 // import firebase auth
-import "package:firebase_auth/firebase_auth.dart";
 
 class DriverPage extends StatefulWidget {
   const DriverPage({Key? key}) : super(key: key);

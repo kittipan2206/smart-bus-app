@@ -28,23 +28,23 @@ class SelectedBusStopWidget extends StatelessWidget {
               color: Colors.grey.withOpacity(0.2),
               spreadRadius: 5,
               blurRadius: 7,
-              offset: Offset(0, 3),
+              offset: const Offset(0, 3),
             ),
           ],
         ),
         child: Column(
           children: [
             _buildRowWithIcon(Icons.stop, 'Bus Stop Name', busStop.name),
-            SizedBox(height: 10.0),
+            const SizedBox(height: 10.0),
             _buildRowWithIcon(Icons.social_distance, 'Bus stop distance',
                 busStop.getDistance()),
-            SizedBox(height: 10.0),
+            const SizedBox(height: 10.0),
             _buildRowWithIcon(
                 Icons.timer, 'Bus stop duration', busStop.getDuration()),
-            SizedBox(height: 10.0),
+            const SizedBox(height: 10.0),
             _buildRowWithIcon(
                 Icons.location_on, 'Bus stop address', busStop.address),
-            SizedBox(height: 10.0),
+            const SizedBox(height: 10.0),
             _buildRowWithIcon(Icons.line_style, 'Bus stop line',
                 busStop.line['line'].join(', ')),
             const SizedBox(height: 10.0),
@@ -111,17 +111,17 @@ class SelectedBusStopWidget extends StatelessWidget {
         Row(
           children: [
             Icon(icon, color: AppColors.orange, size: 20.0),
-            SizedBox(width: 8.0),
+            const SizedBox(width: 8.0),
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ],
         ),
-        SizedBox(width: 10.0),
+        const SizedBox(width: 10.0),
         Expanded(
           child: Text(
             value,
