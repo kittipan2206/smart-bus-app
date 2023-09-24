@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -53,11 +52,11 @@ class LocationServices {
       }
       userLatLng.value =
           LatLng(currentLocation.latitude!, currentLocation.longitude!);
-      print(
+      logger.i(
           'location changed ${currentLocation.latitude} - ${currentLocation.longitude}');
       // Use current location
       // AppVariable.locationData.value = currentLocation;
-      // print('location changed');
+      // logger.i('location changed');
       if (AppVariable.isStreamBusLocation.value) {
         FirebaseServices.updateFirebaseBusLocation('busDriverUID');
       }

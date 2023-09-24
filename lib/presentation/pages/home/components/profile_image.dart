@@ -41,7 +41,7 @@ class ProfileImage extends StatelessWidget {
         await _uploadImageToFirebase(File(croppedFile!.path));
       }
     } catch (e) {
-      print('Error picking image: $e');
+      logger.i('Error picking image: $e');
     }
   }
 
@@ -77,10 +77,10 @@ class ProfileImage extends StatelessWidget {
                 (taskSnapshot.bytesTransferred / taskSnapshot.totalBytes);
             break;
           case TaskState.paused:
-            print("Upload is paused.");
+            logger.i("Upload is paused.");
             break;
           case TaskState.canceled:
-            print("Upload was canceled");
+            logger.i("Upload was canceled");
             break;
           case TaskState.error:
             // Handle unsuccessful uploads
@@ -98,7 +98,7 @@ class ProfileImage extends StatelessWidget {
       });
     } catch (e) {
       Fluttertoast.showToast(msg: 'Error uploading image: $e');
-      print('Error uploading image: $e');
+      logger.i('Error uploading image: $e');
     }
   }
 
@@ -118,7 +118,7 @@ class ProfileImage extends StatelessWidget {
       Get.back();
     } catch (e) {
       Fluttertoast.showToast(msg: 'Error removing image: $e');
-      print('Error removing image: $e');
+      logger.i('Error removing image: $e');
     }
   }
   // final String? imageUrl;

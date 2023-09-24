@@ -13,7 +13,9 @@ import 'package:smart_bus/model/bus_model.dart';
 
 import 'model/bus_stop_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
 
+var logger = Logger();
 Rx<int> selectedBusStopIndex = (-1).obs;
 SharedPreferences? prefs;
 Rx<bool> isLogin = false.obs;
@@ -67,12 +69,12 @@ Future<void> getCurrentLocation() async {
     _locationData = await location.getLocation();
     userLatLng.value =
         LatLng(_locationData.latitude!, _locationData.longitude!);
-    print(
+    logger.i(
         'location changed ${_locationData.latitude} - ${_locationData.longitude}');
 
     location.onLocationChanged.listen((LocationData currentLocation) {
       // Use current location
-      print(
+      logger.i(
           'location changed ${currentLocation.latitude} - ${currentLocation.longitude}');
       _locationData = currentLocation;
       userLatLng.value =
@@ -93,7 +95,7 @@ updateFirebaseBusLocation() async {
       .where('owner', isEqualTo: user.value!.uid)
       .get()
       .then((value) async {
-    // print(value.docs.length);
+    // logger.i(value.docs.length);
     for (var element in value.docs) {
       await FirebaseFirestore.instance
           .collection('bus_data')
@@ -113,7 +115,7 @@ Future<void> getBusList() async {
           .get()
           .then(
           (value) async {
-            print(value.docs.length);
+            logger.i(value.docs.length);
             for (var element in value.docs) {
               await FirebaseFirestore.instance
                   .collection('bus_data')
@@ -121,7 +123,7 @@ Future<void> getBusList() async {
                   .get()
                   .then((value) async {
                 busList.add(BusModel.fromJson(value.data()!));
-                print('allBusList: $busList');
+                logger.i('allBusList: $busList');
               });
             }
           },
@@ -136,7 +138,7 @@ Future<void> getBusList() async {
                   .listen((event) async {
                 busList.add(BusModel.fromJson(event.data()!));
 
-                print('allBusList: $busList');
+                logger.i('allBusList: $busList');
               });
             }
           },
@@ -147,7 +149,7 @@ Future<dynamic> getDistance({required LatLng busLatLng}) async {
   String url =
       'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${userLatLng.value.latitude},${userLatLng.value.longitude}&origins=${busLatLng.latitude},${busLatLng.longitude}&key=AIzaSyCaGjSBHkRCXtTB8u0H9yeErCPg6xDVLD8';
   try {
-    print("user lat long api get$userLatLng");
+    logger.i("user lat long api get$userLatLng");
     var response = await http.get(
         Uri.parse(
           url,
@@ -163,13 +165,13 @@ Future<dynamic> getDistance({required LatLng busLatLng}) async {
       return null;
     }
   } catch (e) {
-    print(e);
+    logger.i(e);
     return null;
   }
 }
 
 Future<void> getDistanceDuration() async {
-  print('get api $userLatLng');
+  logger.i('get api $userLatLng');
   String url = 'https://api.openrouteservice.org/v2/matrix/$profile';
 
   Map<String, dynamic> jsonPayload = {
@@ -212,6 +214,6 @@ Future<void> getDistanceDuration() async {
       Fluttertoast.showToast(msg: 'Error: ${response.statusCode}');
     }
   } catch (e) {
-    print(e);
+    logger.i(e);
   }
 }

@@ -13,8 +13,10 @@ Future<void> setUp() async {
   await getCurrentLocation();
   Get.put(BusController());
   await Firebase.initializeApp(
+    name: 'Smart Bus',
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   await FirebaseServices.streamBusLocation();
   await FirebaseServices.getBusList();
   isLogin.value = FirebaseAuth.instance.currentUser != null;

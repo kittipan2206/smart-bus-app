@@ -29,7 +29,7 @@ class _SettingPageState extends State<SettingPage> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final bool? isGoogleDistanceMatrixAPI =
         prefs.getBool('googleDistanceMatrixAPI');
-    print(isGoogleDistanceMatrixAPI);
+    logger.i(isGoogleDistanceMatrixAPI);
   }
 
   @override
@@ -62,7 +62,7 @@ class _SettingPageState extends State<SettingPage> {
                           isGoogleDistanceMatrixAPI));
                       Future<bool?> test = prefs.then(
                           (value) => value.getBool('googleDistanceMatrixAPI'));
-                      test.then((value) => print(value));
+                      test.then((value) => logger.i(value));
                     });
                   },
                 );

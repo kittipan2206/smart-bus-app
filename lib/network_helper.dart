@@ -1,6 +1,8 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:smart_bus/globals.dart';
+
 class NetworkHelper {
   NetworkHelper(
       {required this.startLng,
@@ -25,7 +27,7 @@ class NetworkHelper {
       String data = response.body;
       return jsonDecode(data);
     } else {
-      print(response.statusCode);
+      logger.i(response.statusCode);
     }
   }
 }

@@ -22,7 +22,7 @@
 //   @override
 //   void initState() {
 //     Timer.periodic(const Duration(seconds: 60), (timer) {
-//       print('timer');
+//       logger.i('timer');
 //       if (busStreamController.isClosed) {
 //         return;
 //       }

@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BusModel {
-  String id;
+  String? id;
   String? name;
   String? licensePlate;
   dynamic busStopLine;
@@ -13,7 +13,7 @@ class BusModel {
   Map? matrix;
 
   BusModel({
-    required this.id,
+    this.id,
     this.name,
     this.licensePlate,
     this.busStopLine,

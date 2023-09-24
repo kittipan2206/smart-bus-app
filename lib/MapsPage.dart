@@ -99,7 +99,7 @@
 //             .snapshots()
 //             .listen((event) async {
 //           GeoPoint geoPoint = event['location'];
-//           print('${element.id}${geoPoint.latitude}, ${geoPoint.longitude}');
+//           logger.i('${element.id}${geoPoint.latitude}, ${geoPoint.longitude}');
 //           // update bus location
 //           final latLng = LatLng(geoPoint.latitude, geoPoint.longitude);
 //           dynamic gDistanceApi = {
@@ -133,10 +133,10 @@
 //             //     gDistanceApi['origin_addresses'][0].toString();
 //             // int durationValue =
 //             //     gDistanceApi['rows'][0]['elements'][0]['duration']['value'];
-//             print(getGoogleApi);
+//             logger.i(getGoogleApi);
 //             if (getGoogleApi) {
 //               dynamic gDistanceApi = await getDistance(busLatLng: latLng);
-//               print(gDistanceApi);
+//               logger.i(gDistanceApi);
 //               if (gDistanceApi['rows'][0]['elements'][0]['status'] == 'OK' &&
 //                   getGoogleApi == true) {
 //                 distance =
@@ -151,8 +151,8 @@
 //               }
 //             }
 
-//             print('distance: $distance');
-//             print('duration: $duration');
+//             logger.i('distance: $distance');
+//             logger.i('duration: $duration');
 //             // busList.add(Bus(
 //             //   id: element.id,
 //             //   name: element['name'],
@@ -160,7 +160,7 @@
 //             //   distance: distance,
 //             //   duration: duration,
 //             // ));
-//             // print('list' + busList.length.toString());
+//             // logger.i('list' + busList.length.toString());
 //             // sort bus list by distance
 //             busList.sort(
 //                 (a, b) => a.distanceInMeters.compareTo(b.distanceInMeters));
@@ -182,7 +182,7 @@
 //             });
 //           } catch (e) {
 //             // Fluttertoast.showToast(msg: 'Error: $e');
-//             print(e);
+//             logger.i(e);
 //           }
 //         });
 //       });
@@ -769,7 +769,7 @@
 //           LatLng(busList[busIndex].location.latitude,
 //               busList[busIndex].location.longitude),
 //         );
-//         print('change camera position');
+//         logger.i('change camera position');
 //         if (selectedBusIndex == null) timer.cancel();
 //       });
 //     }
@@ -824,7 +824,7 @@
 //       polyLines.add(polyline);
 //       setState(() {});
 //     } catch (e) {
-//       print(e);
+//       logger.i(e);
 //     }
 //   }
 
@@ -835,7 +835,7 @@
 //         markerId: MarkerId(busId),
 //         // draggable: true,
 //         // onDragEnd: (newPosition) {
-//         //   print(newPosition);
+//         //   logger.i(newPosition);
 //         // },
 //         position: busLatLng,
 //         infoWindow: InfoWindow(

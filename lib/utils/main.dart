@@ -87,7 +87,7 @@
 //     });
 //     await checkProfile();
 //     await checkLogin();
-//     print('busList: ${busList.length}');
+//     logger.i('busList: ${busList.length}');
 //     if (isLogin) {
 //       Navigator.pushReplacement(
 //           context, MaterialPageRoute(builder: (context) => const MyHomePage()));
@@ -108,13 +108,13 @@
 //         allBusList.clear();
 //         await getBusList();
 //         busDriverUID = user!.uid;
-//         print(auth.currentUser.runtimeType);
-//         print('auth.currentUser: ${auth.currentUser?.email}');
-//         print('auth.currentUser: ${auth.currentUser?.displayName}');
+//         logger.i(auth.currentUser.runtimeType);
+//         logger.i('auth.currentUser: ${auth.currentUser?.email}');
+//         logger.i('auth.currentUser: ${auth.currentUser?.displayName}');
 //         return;
 //       }
 //       if (type == null) return;
-//       print('isLogin: $isLogin');
+//       logger.i('isLogin: $isLogin');
 //       setState(() {
 //         text = 'Fetching bus list...';
 //       });
@@ -205,6 +205,6 @@
 //   checkProfile() async {
 //     final prefs = await SharedPreferences.getInstance();
 //     profile = prefs.getString('profile') ?? 'foot-walking';
-//     print('profile: $profile');
+//     logger.i('profile: $profile');
 //   }
 // }
