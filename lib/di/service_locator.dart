@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
@@ -18,6 +19,16 @@ Future<void> setUp() async {
   await FirebaseServices.streamBusLocation();
   await FirebaseServices.getBusList();
   isLogin.value = FirebaseAuth.instance.currentUser != null;
+
+  // if (isLogin.value) {
+  //     FirebaseFirestore.instance
+  //         .collection('users')
+  //         .doc(FirebaseAuth.instance.currentUser!.uid)
+  //         .get()
+  //         .then((value) {
+
+  //     });
+  //   }
   // getIt
   //   ..registerSingleton(ApiClient())
   //   ..registerSingleton(Database(isar))

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -133,6 +134,11 @@ class _LoginPageState extends State<LoginPage> {
                           onPressed: () async {
                             if (formKey.currentState!.validate()) {
                               FirebaseAuth auth = FirebaseAuth.instance;
+                              Get.defaultDialog(
+                                  title: 'Loading...',
+                                  content: const CircularProgressIndicator(
+                                    color: Colors.blue,
+                                  ));
                               try {
                                 await auth
                                     .signInWithEmailAndPassword(
@@ -142,11 +148,22 @@ class _LoginPageState extends State<LoginPage> {
                                   busStreamController.close();
                                   isLogin.value = true;
                                   user.value = auth.currentUser;
+                                  if (isLogin.value) {
+                                    // listen to user info
+                                    FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc(user.value!.uid)
+                                        .snapshots()
+                                        .listen((event) {
+                                      userInfo.value = event.data()!;
+                                    });
+                                  }
                                   Fluttertoast.showToast(
                                       msg: 'Login success',
                                       backgroundColor: Colors.green,
                                       webBgColor: '#00FF00');
                                   Get.back();
+
                                   // navigate to home page
                                   // Navigator.pushAndRemoveUntil(
                                   //     context,
@@ -159,6 +176,7 @@ class _LoginPageState extends State<LoginPage> {
                                 Fluttertoast.showToast(
                                     msg: e.message.toString());
                               }
+                              Get.back();
                             }
                           },
                           child: const Text('Sign in',

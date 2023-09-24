@@ -3,6 +3,8 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  file_selector_windows
+  firebase_core
   maps_launcher
   url_launcher_windows
 )

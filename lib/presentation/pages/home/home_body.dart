@@ -1,3 +1,6 @@
+import 'dart:ffi';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -22,6 +25,8 @@ class HomeBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // final isDriver = userInfo['roles'] == 'driver';
+
     // list of names and their icons
     final List<String> names = [
       'Select bus',
@@ -70,37 +75,43 @@ class HomeBody extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const ProfileImage(),
+                  ProfileImage(),
                   const SizedBox(
                     width: 10,
                   ),
-                  Obx(() => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Welcome to Smart Bus'),
-                          isLogin.value
-                              ? Text(
-                                  user.value!.displayName ?? 'Guest',
-                                  style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold),
-                                )
-                              : Text('Guest',
-                                  style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold)),
-                          Center(
-                              child: Text(
-                            'Your role: ${isLogin.value ? 'Driver' : 'Guest'}',
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
-                          )),
-                        ],
-                      )),
+                  Obx(() {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Welcome to Smart Bus'),
+                        isLogin.value
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user.value!.displayName ?? 'Guest',
+                                    style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  // role
+                                  // if (userInfo.data() != null)
+
+                                  Text(
+                                    "Role: ${userInfo['roles'] ?? 'Guest'}",
+                                  ),
+                                ],
+                              )
+                            : Text('Guest',
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold)),
+                      ],
+                    );
+                  }),
                 ],
               ),
               Obx(() {
-                if (isLogin.value) {
+                if (isLogin.value && userInfo['roles'] == 'driver') {
                   if (isStreamBusLocation.value) {
                     return Column(
                       children: [
@@ -349,6 +360,7 @@ class HomeBody extends StatelessWidget {
                   ],
                 ),
               ),
+
               const BusList(),
             ],
           ),

@@ -1,8 +1,6 @@
-import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:smart_bus/common/core/languages.dart';
 import 'package:smart_bus/common/style/app_themes.dart';
 import 'package:smart_bus/presentation/pages/core/page_not_found.dart';
-import 'package:smart_bus/presentation/pages/home/home_page.dart';
 import 'package:smart_bus/presentation/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

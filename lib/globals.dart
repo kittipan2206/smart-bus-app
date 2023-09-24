@@ -17,6 +17,7 @@ import 'package:http/http.dart' as http;
 Rx<int> selectedBusStopIndex = (-1).obs;
 SharedPreferences? prefs;
 Rx<bool> isLogin = false.obs;
+RxMap<String, dynamic> userInfo = <String, dynamic>{}.obs;
 bool getGoogleApi = false;
 String profile = 'foot-walking';
 Rx<User?> user = FirebaseAuth.instance.currentUser.obs;
@@ -66,6 +67,8 @@ Future<void> getCurrentLocation() async {
     _locationData = await location.getLocation();
     userLatLng.value =
         LatLng(_locationData.latitude!, _locationData.longitude!);
+    print(
+        'location changed ${_locationData.latitude} - ${_locationData.longitude}');
 
     location.onLocationChanged.listen((LocationData currentLocation) {
       // Use current location
