@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_bus/common/style/app_colors.dart';
 import 'package:smart_bus/globals.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({Key? key}) : super(key: key);
@@ -106,7 +107,24 @@ class _SettingPageState extends State<SettingPage> {
             );
           }
           return const SizedBox();
-        })
+        }),
+        // show version
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FutureBuilder<PackageInfo>(
+                future: PackageInfo.fromPlatform(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return Text(
+                      'Version ${snapshot.data!.version} (${snapshot.data!.buildNumber})',
+                      style: const TextStyle(color: Colors.grey),
+                    );
+                  }
+                  return const SizedBox();
+                }),
+          ],
+        )
       ],
     ));
   }
