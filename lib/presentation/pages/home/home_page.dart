@@ -20,7 +20,7 @@ class HomePage extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Smart Bus'),
           actions: [
-            isLogin
+            Obx(() => isLogin.value
                 ? CircularIconButton(
                     icon: Icons.favorite,
                     onPressed: () {},
@@ -30,7 +30,7 @@ class HomePage extends StatelessWidget {
                     onPressed: () {
                       Get.to(() => const LoginPage());
                     },
-                  )
+                  )),
           ],
         ),
         bottomNavigationBar: const HomeBottomNav(),

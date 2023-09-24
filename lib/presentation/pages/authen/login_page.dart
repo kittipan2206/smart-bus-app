@@ -140,7 +140,8 @@ class _LoginPageState extends State<LoginPage> {
                                         password: passwordController.text)
                                     .then((value) async {
                                   busStreamController.close();
-                                  isLogin = true;
+                                  isLogin.value = true;
+                                  user.value = auth.currentUser;
                                   Fluttertoast.showToast(
                                       msg: 'Login success',
                                       backgroundColor: Colors.green,

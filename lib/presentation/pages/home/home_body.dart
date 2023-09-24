@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -67,23 +68,75 @@ class HomeBody extends StatelessWidget {
           padding: EdgeInsets.all(20.0),
           child: Column(
             children: [
-              const Row(
+              Row(
                 children: [
-                  ProfileImage(),
-                  SizedBox(
+                  const ProfileImage(),
+                  const SizedBox(
                     width: 10,
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Welcome to Smart Bus'),
-                      Text('Guest',
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
+                  Obx(() => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Welcome to Smart Bus'),
+                          isLogin.value
+                              ? Text(
+                                  user.value!.displayName ?? 'Guest',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
+                                )
+                              : Text('Guest',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
+                          Center(
+                              child: Text(
+                            'Your role: ${isLogin.value ? 'Driver' : 'Guest'}',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          )),
+                        ],
+                      )),
                 ],
               ),
+              Obx(() {
+                if (isLogin.value) {
+                  if (isStreamBusLocation.value) {
+                    return Column(
+                      children: [
+                        Center(
+                          child: // share bus location button
+                              ElevatedButton(
+                            onPressed: () {
+                              isStreamBusLocation.value = false;
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                            ),
+                            child: const Text("Stop share bus location"),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Text("Your location: ${userLatLng.toString()}"),
+                      ],
+                    );
+                  } else {
+                    return Center(
+                      child: // stop share bus location button
+                          ElevatedButton(
+                        onPressed: () {
+                          isStreamBusLocation.value = true;
+                        },
+                        child: const Text('Share bus location'),
+                      ),
+                    );
+                  }
+                } else {
+                  return Container();
+                }
+              }),
               const SizedBox(
                 height: 20,
               ),

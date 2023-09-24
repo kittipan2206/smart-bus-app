@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:get/get_rx/src/rx_types/rx_types.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,71 +16,81 @@ import 'package:http/http.dart' as http;
 
 Rx<int> selectedBusStopIndex = (-1).obs;
 SharedPreferences? prefs;
-bool isLogin = false;
+Rx<bool> isLogin = false.obs;
 bool getGoogleApi = false;
 String profile = 'foot-walking';
-User? user;
+Rx<User?> user = FirebaseAuth.instance.currentUser.obs;
 StreamController<BusStopModel> busStreamController =
     StreamController<BusStopModel>();
 RxList<BusStopModel> busStopList = <BusStopModel>[].obs;
 Location currentLocation = Location();
 BusStopModel? nearestBusStop;
-bool isStreamBusLocation = false;
-String? busDriverUID;
+Rx<bool> isStreamBusLocation = false.obs;
 
 RxList<BusModel> busList = <BusModel>[].obs;
 
 late LocationData _locationData;
-LatLng? userLatLng;
-getCurrentLocation() async {
+Rx<LatLng> userLatLng = LatLng(0, 0).obs;
+Future<void> getCurrentLocation() async {
   Location location = Location();
   bool _serviceEnabled;
   PermissionStatus _permissionGranted;
   prefs = await SharedPreferences.getInstance();
 
   getGoogleApi = prefs!.getBool('googleDistanceMatrixAPI') ?? false;
-
-  _serviceEnabled = await location.serviceEnabled();
-  if (!_serviceEnabled) {
-    _serviceEnabled = await location.requestService();
+  try {
+    _serviceEnabled = await location.serviceEnabled();
     if (!_serviceEnabled) {
-      return;
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        // show toast
+        Fluttertoast.showToast(msg: 'Please enable location service');
+        return;
+      }
     }
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        // show toast
+        Fluttertoast.showToast(msg: 'Please enable location permission');
+        return;
+      }
+    }
+    // filter location
+    location.changeSettings(
+        accuracy: LocationAccuracy.high, interval: 3000, distanceFilter: 1);
+
+    // get first location
+    _locationData = await location.getLocation();
+    userLatLng.value =
+        LatLng(_locationData.latitude!, _locationData.longitude!);
+
+    location.onLocationChanged.listen((LocationData currentLocation) {
+      // Use current location
+      print(
+          'location changed ${currentLocation.latitude} - ${currentLocation.longitude}');
+      _locationData = currentLocation;
+      userLatLng.value =
+          LatLng(_locationData.latitude!, _locationData.longitude!);
+      if (isStreamBusLocation.value) {
+        updateFirebaseBusLocation();
+      }
+    });
+  } catch (e) {
+    Fluttertoast.showToast(msg: 'Error: $e');
   }
-
-  _permissionGranted = await location.hasPermission();
-  if (_permissionGranted == PermissionStatus.denied) {
-    _permissionGranted = await location.requestPermission();
-    if (_permissionGranted != PermissionStatus.granted) {
-      return;
-    }
-  }
-  // filter location
-  location.changeSettings(
-      accuracy: LocationAccuracy.high, interval: 3000, distanceFilter: 1);
-
-  // get first location
-  _locationData = await location.getLocation();
-  userLatLng = LatLng(_locationData.latitude!, _locationData.longitude!);
-
-  location.onLocationChanged.listen((LocationData currentLocation) {
-    // Use current location
-    _locationData = currentLocation;
-    userLatLng = LatLng(_locationData.latitude!, _locationData.longitude!);
-    if (isStreamBusLocation) {
-      updateFirebaseBusLocation();
-    }
-  });
 }
 
 updateFirebaseBusLocation() async {
   // update bus location where field owner is busDriverUID
   await FirebaseFirestore.instance
       .collection('bus_data')
-      .where('owner', isEqualTo: busDriverUID)
+      .where('owner', isEqualTo: user.value!.uid)
       .get()
       .then((value) async {
-    print(value.docs.length);
+    // print(value.docs.length);
     for (var element in value.docs) {
       await FirebaseFirestore.instance
           .collection('bus_data')
@@ -93,10 +103,10 @@ updateFirebaseBusLocation() async {
 }
 
 Future<void> getBusList() async {
-  isLogin
+  isLogin.value
       ? await FirebaseFirestore.instance
           .collection('bus_data')
-          .where('owner', isEqualTo: busDriverUID)
+          .where('owner', isEqualTo: user.value!.uid)
           .get()
           .then(
           (value) async {
@@ -132,7 +142,7 @@ Future<void> getBusList() async {
 
 Future<dynamic> getDistance({required LatLng busLatLng}) async {
   String url =
-      'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${userLatLng!.latitude},${userLatLng!.longitude}&origins=${busLatLng.latitude},${busLatLng.longitude}&key=AIzaSyCaGjSBHkRCXtTB8u0H9yeErCPg6xDVLD8';
+      'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${userLatLng.value.latitude},${userLatLng.value.longitude}&origins=${busLatLng.latitude},${busLatLng.longitude}&key=AIzaSyCaGjSBHkRCXtTB8u0H9yeErCPg6xDVLD8';
   try {
     print("user lat long api get" + userLatLng.toString());
     var response = await http.get(
@@ -160,7 +170,7 @@ Future<void> getDistanceDuration() async {
 
   Map<String, dynamic> jsonPayload = {
     "locations": [
-      [userLatLng!.longitude, userLatLng!.latitude],
+      [userLatLng.value.longitude, userLatLng.value.latitude],
       ...busStopList.map((e) => [e.location.longitude, e.location.latitude])
     ],
     "metrics": ["distance", "duration"],

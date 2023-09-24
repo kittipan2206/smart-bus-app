@@ -52,7 +52,7 @@ class LocationServices {
           ],
         ));
       }
-      userLatLng =
+      userLatLng.value =
           LatLng(currentLocation.latitude!, currentLocation.longitude!);
       print(
           'location changed ${currentLocation.latitude} - ${currentLocation.longitude}');

@@ -37,10 +37,10 @@ class FirebaseServices {
   }
 
   static Future<void> getBusList() async {
-    isLogin
+    isLogin.value
         ? await FirebaseFirestore.instance
             .collection('bus_data')
-            .where('owner', isEqualTo: busDriverUID)
+            .where('owner', isEqualTo: user.value!.uid)
             .get()
             .then(
             (value) async {
