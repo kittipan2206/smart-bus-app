@@ -225,12 +225,15 @@ class HomeBody extends StatelessWidget {
                                   color: AppColors.blue),
                             );
                           }
+
                           final BusStopModel busStop =
                               busStopList[selectedBusStopIndex.value];
+
                           final List<BusModel> buses = busList.where((bus) {
+                            final status = bus.status ?? false;
                             return busStop.line['line']
                                     .contains(bus.busStopLine) &&
-                                bus.status!;
+                                status;
                           }).toList();
                           if (buses.isEmpty) {
                             return const Text(

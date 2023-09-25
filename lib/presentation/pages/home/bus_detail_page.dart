@@ -31,11 +31,12 @@ class BusDetailPage extends StatelessWidget {
             children: [
               _buildDetailCard('Bus Name', bus.name!),
               _buildDetailCard('License Plate', bus.licensePlate!),
-              _buildDetailCard('Status', bus.status! ? 'Active' : 'Inactive',
-                  textColor: bus.status! ? Colors.green : Colors.red),
-              _buildDetailCard('Next Bus Stop', bus.nextBusStop!),
-              _buildDetailCard('Onward', bus.onward! ? 'Yes' : 'No',
-                  textColor: bus.onward! ? Colors.green : Colors.red),
+              _buildDetailCard(
+                  'Status', bus.status ?? false ? 'Active' : 'Inactive',
+                  textColor: bus.status ?? false ? Colors.green : Colors.red),
+              _buildDetailCard('Next Bus Stop', bus.nextBusStop ?? "No data"),
+              _buildDetailCard('Onward', bus.onward ?? true ? 'Yes' : 'No',
+                  textColor: bus.onward ?? true ? Colors.green : Colors.red),
               _buildDetailCard('Owner', bus.owner!),
               _buildDetailCard('Bus Stop Line', bus.busStopLine!.toString()),
             ],
