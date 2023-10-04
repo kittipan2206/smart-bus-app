@@ -140,7 +140,7 @@ class FirebaseServices {
         // addBusMarker(element.id, LatLng(geoPoint.latitude, geoPoint.longitude));
         // when complete sort bus list
       }
-      // await Future.delayed(const Duration(seconds: 1));s
+      await Future.delayed(const Duration(seconds: 1));
       await getDistanceDuration();
       for (var i = 0; i < busStopList.length; i++) {
         busStopList[i].startTimer();
