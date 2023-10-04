@@ -22,16 +22,9 @@ class _SettingPageState extends State<SettingPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    getPrefs();
   }
 
   bool isGoogleDistanceMatrixAPI = false;
-  getPrefs() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final bool? isGoogleDistanceMatrixAPI =
-        prefs.getBool('googleDistanceMatrixAPI');
-    logger.i(isGoogleDistanceMatrixAPI);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,16 +49,7 @@ class _SettingPageState extends State<SettingPage> {
                 return Switch(
                   value: snapshot.data ?? false,
                   onChanged: (bool value) {
-                    setState(() {
-                      isGoogleDistanceMatrixAPI = value;
-                      prefs.then((value) => value.setBool(
-                          'googleDistanceMatrixAPI',
-                          isGoogleDistanceMatrixAPI));
-                      Future<bool?> test = prefs.then(
-                          (value) => value.getBool('googleDistanceMatrixAPI'));
-
-                      FirebaseServices.streamBusLocation();
-                    });
+                    setState(() {});
                   },
                 );
               }),
