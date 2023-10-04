@@ -41,7 +41,10 @@ class BusStopModel {
             durationInSeconds = durationInSeconds - 1,
           }
         else
-          {timer.cancel(), getDistanceDuration()}
+          {
+            timer.cancel(),
+            // getDistanceDuration(),
+          }
       },
     );
   }

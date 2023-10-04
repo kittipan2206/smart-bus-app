@@ -171,7 +171,7 @@ Future<dynamic> getDistance({required LatLng busLatLng}) async {
 }
 
 Future<void> getDistanceDuration() async {
-  logger.i('get api $userLatLng');
+  logger.i('get this api$userLatLng');
   String url = 'https://api.openrouteservice.org/v2/matrix/$profile';
 
   Map<String, dynamic> jsonPayload = {
