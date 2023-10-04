@@ -15,32 +15,35 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final HomeController homeController = Get.find<HomeController>();
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Smart Bus'),
-          actions: [
-            Obx(() => isLogin.value
-                ? CircularIconButton(
-                    icon: Icons.favorite,
-                    onPressed: () {},
-                  )
-                : CircularIconButton(
-                    icon: Icons.login_rounded,
-                    onPressed: () {
-                      Get.to(() => const LoginPage());
-                    },
-                  )),
-          ],
-        ),
-        bottomNavigationBar: const HomeBottomNav(),
-        body: Obx(
-          () => IndexedStack(
-            index: homeController.tabIndex.value,
-            children: const [
-              HomeBody(),
-              SettingPage(),
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 414),
+      child: SafeArea(
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Smart Bus'),
+            actions: [
+              Obx(() => isLogin.value
+                  ? CircularIconButton(
+                      icon: Icons.favorite,
+                      onPressed: () {},
+                    )
+                  : CircularIconButton(
+                      icon: Icons.login_rounded,
+                      onPressed: () {
+                        Get.to(() => const LoginPage());
+                      },
+                    )),
             ],
+          ),
+          bottomNavigationBar: const HomeBottomNav(),
+          body: Obx(
+            () => IndexedStack(
+              index: homeController.tabIndex.value,
+              children: const [
+                HomeBody(),
+                SettingPage(),
+              ],
+            ),
           ),
         ),
       ),

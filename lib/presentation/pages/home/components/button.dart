@@ -13,7 +13,6 @@ class CircularIconButton extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(50),
-        color: Colors.white,
       ),
       child: IconButton(
         onPressed: onPressed,

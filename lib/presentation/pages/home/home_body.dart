@@ -33,9 +33,6 @@ class HomeBody extends StatelessWidget {
         userInfo.value = event.data()!;
       });
     }
-    // final isDriver = userInfo['roles'] == 'driver';
-
-    // list of names and their icons
     final List<String> names = [
       'Select bus',
       'Journey plan',
@@ -172,6 +169,8 @@ class HomeBody extends StatelessWidget {
                     (index) => InkWell(
                       onTap: onPresseds[index],
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        // mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
                             padding: const EdgeInsets.all(10),
@@ -261,46 +260,10 @@ class HomeBody extends StatelessWidget {
                                 'assets/lottie/moving-bus.json',
                                 fit: BoxFit.cover,
                               ),
-                              GestureDetector(
+                              InkWell(
                                 onTap: () {
                                   Get.to(() => BusDetailPage(
                                       busIndex: busList.indexOf(nearestBus)));
-                                  // Get.dialog(AlertDialog.adaptive(
-                                  //   title: const Text('Bus information'),
-                                  //   content: Column(
-                                  //     mainAxisSize: MainAxisSize.min,
-                                  //     mainAxisAlignment:
-                                  //         MainAxisAlignment.start,
-                                  //     children: [
-                                  //       Text(
-                                  //         'Bus name: ${nearestBus.name}',
-                                  //       ),
-                                  //       Text(
-                                  //         'License plate: ${nearestBus.licensePlate}',
-                                  //         style: const TextStyle(
-                                  //             fontWeight: FontWeight.bold),
-                                  //       ),
-                                  //       Text(
-                                  //         'Next bus stop: ${nearestBus.nextBusStop}',
-                                  //         style: const TextStyle(
-                                  //             fontWeight: FontWeight.bold),
-                                  //       ),
-                                  //       Text(
-                                  //         'Onward: ${nearestBus.onward}',
-                                  //         style: const TextStyle(
-                                  //             fontWeight: FontWeight.bold),
-                                  //       ),
-                                  //     ],
-                                  //   ),
-                                  //   actions: [
-                                  //     TextButton(
-                                  //       onPressed: () {
-                                  //         Get.back();
-                                  //       },
-                                  //       child: const Text('Close'),
-                                  //     ),
-                                  //   ],
-                                  // ));
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
@@ -371,7 +334,6 @@ class HomeBody extends StatelessWidget {
                   ],
                 ),
               ),
-
               const BusList(),
             ],
           ),

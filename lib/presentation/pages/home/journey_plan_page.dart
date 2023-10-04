@@ -97,13 +97,15 @@ class _JourneyPlanPageState extends State<JourneyPlanPage> {
                             padding: const EdgeInsets.symmetric(horizontal: 10),
                             child: Column(
                               children: [
-                                const Icon(Icons.location_on, color: Colors.blue),
+                                const Icon(Icons.location_on,
+                                    color: Colors.blue),
                                 Container(
                                   height: 50,
                                   width: 1,
                                   color: Colors.grey,
                                 ),
-                                const Icon(Icons.location_on, color: Colors.red),
+                                const Icon(Icons.location_on,
+                                    color: Colors.red),
                               ],
                             ),
                           ),
@@ -352,23 +354,7 @@ class _JourneyPlanPageState extends State<JourneyPlanPage> {
                                                       )),
                                               ],
                                             ),
-                                            // Container(
-                                            //   padding: const EdgeInsets.all(5),
-                                            //   decoration: BoxDecoration(
-                                            //     color: Colors.red,
-                                            //     borderRadius:
-                                            //         BorderRadius.circular(5),
-                                            //   ),
-                                            //   child: Text(
-                                            //     resultPath[index]
-                                            //         .line['line']
-                                            //         .join('or '),
-                                            //     style: const TextStyle(
-                                            //         color: AppColors.white),
-                                            //   ),
-                                            // ),
                                             const SizedBox(height: 5),
-                                            // arrow
                                             if (index < resultPath.length - 1)
                                               Icon(
                                                 Icons.arrow_downward,
@@ -413,13 +399,57 @@ class _JourneyPlanPageState extends State<JourneyPlanPage> {
                                                     ),
                                                   ),
                                                 ),
-                                                Text(
-                                                  resultPath[index + 1].name,
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: AppColors.black,
-                                                  ),
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                      resultPath[index + 1]
+                                                          .name,
+                                                      style: const TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: AppColors.black,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 5),
+                                                    // show only line that related between previous stop and next stop such as previous stop is 1, next stop is 1, 2 then show only line 1
+                                                    for (var line
+                                                        in resultPath[index + 1]
+                                                            .line['line'])
+                                                      if (resultPath[index]
+                                                          .line['line']
+                                                          .contains(line))
+                                                        Obx(
+                                                          () => Container(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(5),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              // code color blue is 0xff3f51b5, red is 0xffe53935, green is 0xff43a047, pink is 0xffe91e63, orange is 0xffff9800
+                                                              color: Color(busController
+                                                                      .busLineList
+                                                                      .where((element) =>
+                                                                          element[
+                                                                              'Id'] ==
+                                                                          line)
+                                                                      .first['color'] ??
+                                                                  0),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          5),
+                                                            ),
+                                                            child: Text(
+                                                              // join line and route
+                                                              line.toString(),
+                                                              style: const TextStyle(
+                                                                  color: AppColors
+                                                                      .white),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                  ],
                                                 ),
                                               ],
                                             ),
