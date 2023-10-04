@@ -40,7 +40,7 @@ Future<void> getCurrentLocation() async {
   PermissionStatus permissionGranted;
   prefs = await SharedPreferences.getInstance();
 
-  getGoogleApi = prefs!.getBool('googleDistanceMatrixAPI') ?? false;
+  // getGoogleApi = prefs!.getBool('googleDistanceMatrixAPI') ?? false;
   try {
     serviceEnabled = await location.serviceEnabled();
     if (!serviceEnabled) {

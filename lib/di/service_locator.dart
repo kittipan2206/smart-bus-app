@@ -10,5 +10,6 @@ Future<void> setUp() async {
 
   await FirebaseServices.streamBusLocation();
   await FirebaseServices.getBusList();
+
   isLogin.value = FirebaseAuth.instance.currentUser != null;
 }

@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_bus/common/style/app_colors.dart';
 import 'package:smart_bus/globals.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:smart_bus/presentation/shared_controller/firebase_services.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({Key? key}) : super(key: key);
@@ -62,7 +63,8 @@ class _SettingPageState extends State<SettingPage> {
                           isGoogleDistanceMatrixAPI));
                       Future<bool?> test = prefs.then(
                           (value) => value.getBool('googleDistanceMatrixAPI'));
-                      test.then((value) => logger.i(value));
+
+                      FirebaseServices.streamBusLocation();
                     });
                   },
                 );
