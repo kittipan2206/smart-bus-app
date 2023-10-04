@@ -131,20 +131,6 @@ class FirebaseServices {
               durationInSeconds: durationValue,
               line: event['line'],
             ));
-            // for loop to get bus line
-            // for (var i = 0; i < busStopList.length; i++) {
-            //   for (var j = 0; j < busStopList[i].line['line'].length; j++) {
-            //     if (busController.busLineList
-            //         .contains(busStopList[i].line['line'][j])) {
-            //       continue;
-            //     }
-            //     busController.busLineList.add(busStopList[i].line['line'][j]);
-            //   }
-            // }
-
-            // busList.value.sort(
-            //     (a, b) => a.line['order'][0].compareTo(b.line['order'][0]));
-            // print('list' + busList.value.length.toString());
           } catch (e) {
             // Fluttertoast.showToast(msg: 'Error: $e');
             print(e);
@@ -154,12 +140,9 @@ class FirebaseServices {
         // addBusMarker(element.id, LatLng(geoPoint.latitude, geoPoint.longitude));
         // when complete sort bus list
       }
-      await Future.delayed(const Duration(seconds: 1));
+      // await Future.delayed(const Duration(seconds: 1));
       await getDistanceDuration();
       for (var i = 0; i < busStopList.length; i++) {
-        // print('busList.value: ${busList.value[i].name}');
-        // print('busList.value: ${busList.value[i].getDistance()}');
-        // print('busList.value: ${busList.value[i].getDuration()}');
         busStopList[i].startTimer();
       }
     });

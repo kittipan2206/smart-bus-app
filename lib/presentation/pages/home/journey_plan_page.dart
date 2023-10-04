@@ -325,49 +325,56 @@ class _JourneyPlanPageState extends State<JourneyPlanPage> {
                                                 for (var line
                                                     in resultPath[index]
                                                         .line['line'])
-                                                  Obx(() => Container(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(5),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          // code color blue is 0xff3f51b5, red is 0xffe53935, green is 0xff43a047, pink is 0xffe91e63, orange is 0xffff9800
-                                                          color: Color(busController
-                                                                  .busLineList
-                                                                  .where((element) =>
-                                                                      element[
-                                                                          'Id'] ==
-                                                                      line)
-                                                                  .first['color'] ??
-                                                              0),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(5),
-                                                        ),
-                                                        child: Text(
-                                                          // join line and route
-                                                          line.toString(),
-                                                          style: const TextStyle(
-                                                              color: AppColors
-                                                                  .white),
-                                                        ),
-                                                      )),
+                                                  Obx(() {
+                                                    return Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              5),
+                                                      decoration: BoxDecoration(
+                                                        // code color blue is 0xff3f51b5, red is 0xffe53935, green is 0xff43a047, pink is 0xffe91e63, orange is 0xffff9800
+                                                        color: Color(busController
+                                                                .busLineList
+                                                                .where((element) =>
+                                                                    element[
+                                                                        'Id'] ==
+                                                                    line)
+                                                                .first['color'] ??
+                                                            0),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5),
+                                                      ),
+                                                      child: Text(
+                                                        // join line and route
+                                                        line.toString(),
+                                                        style: const TextStyle(
+                                                            color: AppColors
+                                                                .white),
+                                                      ),
+                                                    );
+                                                  }),
                                               ],
                                             ),
                                             const SizedBox(height: 5),
                                             if (index < resultPath.length - 1)
                                               Icon(
                                                 Icons.arrow_downward,
-                                                color: Color(busController
-                                                        .busLineList
-                                                        .where((element) =>
-                                                            element['Id'] ==
-                                                            resultPath[
-                                                                    index + 1]
-                                                                .line['line']
-                                                                .first)
-                                                        .first['color'] ??
-                                                    0),
+                                                color: Color(
+                                                  busController.busLineList
+                                                          .where(
+                                                            (element) =>
+                                                                resultPath[
+                                                                        index +
+                                                                            1]
+                                                                    .line[
+                                                                        'line']
+                                                                    .contains(
+                                                                        element[
+                                                                            'Id']),
+                                                          )
+                                                          .first['color'] ??
+                                                      0,
+                                                ),
                                               ),
                                           ],
                                         ),
@@ -378,14 +385,23 @@ class _JourneyPlanPageState extends State<JourneyPlanPage> {
                                                     .line['line']
                                                     .length >
                                                 1 &&
-                                            (resultPath[index - 1]
-                                                    .line['line']
-                                                    .join(' to ') !=
-                                                resultPath[index + 1]
-                                                    .line['line']
-                                                    .join(' to ')))
+                                            resultPath[index + 1]
+                                                .line['line']
+                                                .toSet()
+                                                .intersection(
+                                                    resultPath[index - 1]
+                                                        .line['line']
+                                                        .toSet())
+                                                .isEmpty)
+                                          // (resultPath[index - 1]
+                                          //         .line['line']
+                                          //         .join(' to ') !=
+                                          //     resultPath[index + 1]
+                                          //         .line['line']
+                                          //         .join(' to ')))
                                           Container(
-                                            color: AppColors.orange,
+                                            color: AppColors.orange
+                                                .withOpacity(0.4),
                                             child: Row(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.spaceEvenly,
@@ -412,7 +428,6 @@ class _JourneyPlanPageState extends State<JourneyPlanPage> {
                                                       ),
                                                     ),
                                                     const SizedBox(width: 5),
-                                                    // show only line that related between previous stop and next stop such as previous stop is 1, next stop is 1, 2 then show only line 1
                                                     for (var line
                                                         in resultPath[index + 1]
                                                             .line['line'])

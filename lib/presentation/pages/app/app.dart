@@ -33,7 +33,7 @@ class App extends StatelessWidget {
         );
       },
       clipBehavior: Clip.hardEdge,
-      maximumSize: const Size(475.0, 812.0),
+      maximumSize: const Size(600.0, double.infinity),
       enabled: kIsWeb,
       backgroundColor: AppColors.lightBlue,
     );
