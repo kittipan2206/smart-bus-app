@@ -40,14 +40,10 @@ Widget _buildRunnableApp({
   return Card(
     child: Center(
       child: ClipRect(
-        child: Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          elevation: 6,
-          child: SizedBox(
-            width: webAppWidth,
-            height: double.infinity,
-            child: app,
-          ),
+        child: SizedBox(
+          width: webAppWidth,
+          height: double.infinity,
+          child: app,
         ),
       ),
     ),
