@@ -23,7 +23,7 @@ class FirebaseServices {
         .where('owner', isEqualTo: busDriverUID)
         .get()
         .then((value) async {
-      print(value.docs.length);
+      logger.i(value.docs.length);
       for (final element in value.docs) {
         await FirebaseFirestore.instance
             .collection('bus_data')
@@ -44,7 +44,7 @@ class FirebaseServices {
             .get()
             .then(
             (value) async {
-              print(value.docs.length);
+              logger.i(value.docs.length);
               for (var element in value.docs) {
                 await FirebaseFirestore.instance
                     .collection('bus_data')
@@ -54,7 +54,7 @@ class FirebaseServices {
                   // remove old bus
                   busList.removeWhere((element) => element.id == value.id);
                   busList.add(BusModel.fromJson(value.data()!));
-                  print('allBusList: ${busList.toString()}');
+                  logger.i('allBusList: ${busList.toString()}');
                 });
               }
             },
@@ -71,7 +71,7 @@ class FirebaseServices {
                   busList.removeWhere((element) => element.id == event.id);
                   busList.add(BusModel.fromJson(event.data()!));
 
-                  print('allBusList: $busList');
+                  logger.i('allBusList: $busList');
                 });
               }
             },
@@ -79,7 +79,7 @@ class FirebaseServices {
   }
 
   static Future<void> streamBusLocation() async {
-    print('streamBusLocation');
+    logger.i('streamBusLocation');
     getBusLine();
     await FirebaseFirestore.instance
         .collection('bus_stop_data')
@@ -92,7 +92,7 @@ class FirebaseServices {
             .snapshots()
             .listen((event) async {
           GeoPoint geoPoint = event['location'];
-          print('${element.id} ${geoPoint.latitude}, ${geoPoint.longitude}');
+          logger.i('${element.id} ${geoPoint.latitude}, ${geoPoint.longitude}');
           // update bus location
           final latLng = LatLng(geoPoint.latitude, geoPoint.longitude);
 
@@ -118,8 +118,8 @@ class FirebaseServices {
               }
             }
 
-            print('distance: $distance');
-            print('duration: $duration');
+            logger.i('distance: $distance');
+            logger.i('duration: $duration');
 
             busStopList.removeWhere((element) => element.id == event.id);
             busStopList.add(BusStopModel(
@@ -133,7 +133,7 @@ class FirebaseServices {
             ));
           } catch (e) {
             // Fluttertoast.showToast(msg: 'Error: $e');
-            print(e);
+            logger.i(e);
           }
         });
 
@@ -157,11 +157,11 @@ class FirebaseServices {
             .snapshots()
             .listen((event) {
           // remove old bus
-          print(event.id);
+          logger.i(event.id);
           busController.busLineList
               .removeWhere((element) => element["Id"] == event.data()!["Id"]);
           busController.busLineList.add(event.data());
-          print('busLineList: ${busController.busLineList}');
+          logger.i('busLineList: ${busController.busLineList}');
         });
       }
     });
@@ -178,13 +178,13 @@ class FirebaseServices {
         // allBusList.clear();
         // await getBusList();
         // busDriverUID = user!.uid;
-        print(auth.currentUser.runtimeType);
-        print('auth.currentUser: ${auth.currentUser?.email}');
-        print('auth.currentUser: ${auth.currentUser?.displayName}');
+        logger.i(auth.currentUser.runtimeType);
+        logger.i('auth.currentUser: ${auth.currentUser?.email}');
+        logger.i('auth.currentUser: ${auth.currentUser?.displayName}');
         return;
       }
       // if (type == null) return;
-      print('isLogin: ${AppVariable.isLogin.value}');
+      logger.i('isLogin: ${AppVariable.isLogin.value}');
       // setState(() {
       //   text = 'Fetching bus list...';
       // });
