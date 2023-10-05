@@ -45,6 +45,10 @@ class BusList extends StatelessWidget {
                   //                   .contains(busController.busLineList[index]
                   //                       ["Id"]))
                   //               .toList();
+                  final firstLine = busStopInLine.firstWhereOrNull(
+                      (element) => element.line['order'].contains(1));
+                  final lastLine = busStopInLine.firstWhereOrNull((element) =>
+                      element.line['order'].contains(busStopInLine.length));
                   return Column(
                     children: [
                       ExpansionTile(
@@ -67,9 +71,9 @@ class BusList extends StatelessWidget {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (busStopInLine.isNotEmpty)
-                              Text(
-                                  "${busStopInLine[0].name} -> ${busStopInLine[busStopInLine.length - 1].name}")
+                            if (busStopInLine.isNotEmpty &&
+                                (firstLine != null && lastLine != null))
+                              Text('${firstLine.name} - ${lastLine.name}')
                             else
                               const Text("No bus stop"),
 
