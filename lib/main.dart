@@ -2,7 +2,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:smart_bus/common/style/app_colors.dart';
 import 'package:smart_bus/di/service_locator.dart';
 import 'package:smart_bus/firebase_options.dart';
 import 'package:smart_bus/presentation/pages/app/app.dart';

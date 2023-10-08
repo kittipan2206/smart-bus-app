@@ -3,10 +3,8 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:smart_bus/common/core/app_variables.dart';
-import 'package:smart_bus/firebase_options.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:smart_bus/globals.dart';
 import 'package:smart_bus/model/bus_model.dart';
@@ -21,6 +19,7 @@ class FirebaseServices {
     await FirebaseFirestore.instance
         .collection('bus_data')
         .where('owner', isEqualTo: busDriverUID)
+        .where('documentId', isEqualTo: selectedBusSharingId.value!.id)
         .get()
         .then((value) async {
       logger.i(value.docs.length);
@@ -29,53 +28,56 @@ class FirebaseServices {
             .collection('bus_data')
             .doc(element.id)
             .update({
-          'location': GeoPoint(AppVariable.locationData!.value.latitude!,
-              AppVariable.locationData!.value.longitude!)
+          'location': GeoPoint(userLatLng.value.latitude,
+              userLatLng.value.longitude), // update bus location
         });
       }
     });
   }
 
   static Future<void> getBusList() async {
-    isLogin.value
-        ? await FirebaseFirestore.instance
-            .collection('bus_data')
-            .where('owner', isEqualTo: user.value!.uid)
-            .get()
-            .then(
-            (value) async {
-              logger.i(value.docs.length);
-              for (var element in value.docs) {
-                await FirebaseFirestore.instance
-                    .collection('bus_data')
-                    .doc(element.id)
-                    .get()
-                    .then((value) async {
-                  // remove old bus
-                  busList.removeWhere((element) => element.id == value.id);
-                  busList.add(BusModel.fromJson(value.data()!));
-                  logger.i('allBusList: ${busList.toString()}');
-                });
-              }
-            },
-          )
-        : await FirebaseFirestore.instance.collection('bus_data').get().then(
-            (value) async {
-              for (var element in value.docs) {
-                FirebaseFirestore.instance
-                    .collection('bus_data')
-                    .doc(element.id)
-                    .snapshots()
-                    .listen((event) async {
-                  // remove old bus
-                  busList.removeWhere((element) => element.id == event.id);
-                  busList.add(BusModel.fromJson(event.data()!));
+    // listen to bus data
+    FirebaseFirestore.instance.collection('bus_data').snapshots().listen(
+      (value) async {
+        busList.clear();
+        for (var element in value.docs) {
+          FirebaseFirestore.instance
+              .collection('bus_data')
+              .doc(element.id)
+              .snapshots()
+              .listen((event) async {
+            // remove old bus
+            busList.removeWhere((element) => element.id == event.id);
+            busList.add(BusModel.fromJson(event.data()!));
+            logger.i('allBusList: $busList');
+          });
+        }
+      },
+    );
+  }
 
-                  logger.i('allBusList: $busList');
-                });
-              }
-            },
-          );
+  static Future<void> getDriverBusList() async {
+    await FirebaseFirestore.instance
+        .collection('bus_data')
+        .where('owner', isEqualTo: user.value!.uid)
+        .get()
+        .then(
+      (value) async {
+        logger.i(value.docs.length);
+        for (var element in value.docs) {
+          await FirebaseFirestore.instance
+              .collection('bus_data')
+              .doc(element.id)
+              .get()
+              .then((value) async {
+            // remove old bus
+            driverBusList.removeWhere((element) => element.id == value.id);
+            driverBusList.add(BusModel.fromJson(value.data()!));
+            logger.i('driverbus: ${driverBusList.toString()}');
+          });
+        }
+      },
+    );
   }
 
   static Future<void> streamBusLocation() async {
@@ -167,30 +169,25 @@ class FirebaseServices {
     });
   }
 
-  static Future<void> checkLogin() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    ).then((value) async {
-      FirebaseAuth auth = FirebaseAuth.instance;
-      AppVariable.isLogin.value = auth.currentUser != null;
-      if (auth.currentUser != null) {
-        AppVariable.user.value = auth.currentUser;
-        // allBusList.clear();
-        // await getBusList();
-        // busDriverUID = user!.uid;
-        logger.i(auth.currentUser.runtimeType);
-        logger.i('auth.currentUser: ${auth.currentUser?.email}');
-        logger.i('auth.currentUser: ${auth.currentUser?.displayName}');
-        return;
-      }
-      // if (type == null) return;
-      logger.i('isLogin: ${AppVariable.isLogin.value}');
-      // setState(() {
-      //   text = 'Fetching bus list...';
-      // });
-      // await streamBusLocation();
-      // await getBusList();
-      unawaited(Fluttertoast.showToast(msg: 'Firebase initialized'));
-    });
+  static Future loginWithGoogle() async {
+    try {
+      GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: [
+          'https://www.googleapis.com/auth/contacts.readonly',
+        ],
+      );
+      GoogleSignInAccount? user = await googleSignIn.signIn();
+      GoogleSignInAuthentication? userAuth = await user?.authentication;
+      final auth = FirebaseAuth.instance;
+
+      await auth.signInWithCredential(GoogleAuthProvider.credential(
+          idToken: userAuth!.idToken, accessToken: userAuth.accessToken));
+      Fluttertoast.showToast(msg: 'Login success');
+      isLogin.value = true;
+      Get.back();
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Login failed $e');
+      logger.i(e);
+    }
   }
 }

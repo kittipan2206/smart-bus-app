@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:smart_bus/common/core/app_variables.dart';
 import 'package:smart_bus/globals.dart';
-import 'package:smart_bus/presentation/shared_controller/firebase_services.dart';
+import 'package:smart_bus/services/firebase_services.dart';
 import 'package:location/location.dart';
 
 class LocationServices {

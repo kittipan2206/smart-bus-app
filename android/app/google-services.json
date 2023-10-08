@@ -14,7 +14,7 @@
       },
       "oauth_client": [
         {
-          "client_id": "289143881277-0keep21o9000575kmjajve3716u4vto1.apps.googleusercontent.com",
+          "client_id": "289143881277-li7j232bv3dufn7gnks8bh8spm8h38k5.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -29,6 +29,13 @@
             {
               "client_id": "289143881277-0keep21o9000575kmjajve3716u4vto1.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "289143881277-bd3ne4v2k3ephbqgcsu1gcvne2m38ocs.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.smartBus"
+              }
             }
           ]
         }

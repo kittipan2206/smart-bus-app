@@ -252,75 +252,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                             if (role == 'driver')
                               // add bus model
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  // add bus button
-                                  ElevatedButton(
-                                      onPressed: () {
-                                        _addBusDialog();
-                                      },
-                                      child: const Text('Add Bus')),
-                                  const Text('You can also add bus later',
-                                      style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold)),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Obx(() =>
-                                        // listtile
-                                        ListView.builder(
-                                            physics:
-                                                const NeverScrollableScrollPhysics(),
-                                            shrinkWrap: true,
-                                            itemCount: _busList.length,
-                                            itemBuilder: (context, index) {
-                                              return ListTile(
-                                                title: Expanded(
-                                                    child: Text(
-                                                  _busList[index].name!,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                )),
-                                                subtitle: Expanded(
-                                                    child: Text(
-                                                  _busList[index].licensePlate!,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                )),
-                                                trailing: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    IconButton(
-                                                      onPressed: () {
-                                                        _addBusDialog(
-                                                            bus: _busList[
-                                                                index]);
-                                                      },
-                                                      icon: const Icon(
-                                                          Icons.edit_outlined),
-                                                    ),
-                                                    IconButton(
-                                                      onPressed: () {
-                                                        _busList.removeWhere(
-                                                            (element) =>
-                                                                element.id ==
-                                                                _busList[index]
-                                                                    .id);
-                                                      },
-                                                      icon: const Icon(
-                                                        Icons.delete,
-                                                        color: Colors.red,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-                                            })),
-                                  ),
-                                ],
-                              ),
+                              addBus(_busList),
 
                             const SizedBox(
                               height: 10,
@@ -483,121 +415,202 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
     );
   }
+}
 
-  void _addBusDialog({BusModel? bus}) {
-    // add bus name, license plate, line
-    final TextEditingController busNameController = TextEditingController();
-    final TextEditingController licensePlateController =
-        TextEditingController();
-    String busStopLine = '';
-    BusController busController = Get.put(BusController());
-    final GlobalKey<FormState> formKeyBus = GlobalKey<FormState>();
-    if (bus != null) {
-      busNameController.text = bus.name!;
-      licensePlateController.text = bus.licensePlate!;
-      // _busStopLine = bus.busStopLine!;
-    }
-    Get.defaultDialog(
-        title: 'Add Bus',
-        content: Form(
-          key: formKeyBus,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: busNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Bus Name',
+Column addBus(List<BusModel> busList) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.end,
+    children: [
+      // add bus button
+      ElevatedButton(
+          onPressed: () {
+            addBusDialog(rawBusList: busList);
+          },
+          child: const Text('Add Bus')),
+      const Text('You can also add bus later',
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Obx(
+          () =>
+              // listtile
+              ListView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: busList.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Expanded(
+                    child: Text(
+                  busList[index].name!,
+                  overflow: TextOverflow.ellipsis,
+                )),
+                subtitle: Expanded(
+                    child: Text(
+                  busList[index].licensePlate!,
+                  overflow: TextOverflow.ellipsis,
+                )),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        addBusDialog(bus: busList[index], rawBusList: busList);
+                      },
+                      icon: const Icon(Icons.edit_outlined),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        busList.removeWhere(
+                            (element) => element.id == busList[index].id);
+                      },
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter bus name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              TextFormField(
-                controller: licensePlateController,
-                decoration: const InputDecoration(
-                  labelText: 'License Plate',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter license plate';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              DropdownButtonFormField(
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Bus Stop Line',
-                  ),
-                  // value: _busStopLine,
-
-                  onChanged: (value) {
-                    setState(() {
-                      busStopLine = value.toString();
-                    });
-                  },
-                  items: [
-                    ...busController.busLineList.map((e) {
-                      return DropdownMenuItem(
-                        value: e['Id'],
-                        child: Text(e['name']),
-                      );
-                    }).toList()
-                  ]),
-              ElevatedButton(
-                  onPressed: () {
-                    if (formKeyBus.currentState!.validate()) {
-                      if (busStopLine == '') {
-                        Fluttertoast.showToast(
-                            msg: 'Please select bus stop line',
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.BOTTOM,
-                            timeInSecForIosWeb: 1,
-                            backgroundColor: Colors.red,
-                            textColor: Colors.white,
-                            fontSize: 16.0);
-                        return;
-                      }
-                      if (bus != null) {
-                        // delete old bus
-                        _busList.removeWhere((element) =>
-                            element.licensePlate == bus.licensePlate);
-                        _busList.add(BusModel(
-                          id: bus.id,
-                          name: busNameController.text,
-                          licensePlate: licensePlateController.text,
-                          busStopLine: busStopLine,
-                          // owner: user.value!.uid,
-                          status: false,
-                          onward: false,
-                        ));
-                      } else {
-                        _busList.add(BusModel(
-                          id: '',
-                          name: busNameController.text,
-                          licensePlate: licensePlateController.text,
-                          busStopLine: busStopLine,
-                          // owner: user.value!.uid,
-                          status: false,
-                          onward: false,
-                        ));
-                      }
-
-                      Get.back();
-                    }
-                  },
-                  child: Text(bus == null ? 'Add' : 'Update')),
-            ],
+              );
+            },
           ),
-        ));
+        ),
+      ),
+    ],
+  );
+}
+
+void addBusDialog({BusModel? bus, required List<BusModel> rawBusList}) {
+  // add bus name, license plate, line
+  final TextEditingController busNameController = TextEditingController();
+  final TextEditingController licensePlateController = TextEditingController();
+  String busStopLine = '';
+  BusController busController = Get.put(BusController());
+  final GlobalKey<FormState> formKeyBus = GlobalKey<FormState>();
+  if (bus != null) {
+    busNameController.text = bus.name!;
+    licensePlateController.text = bus.licensePlate!;
+    // _busStopLine = bus.busStopLine!;
   }
+  Get.defaultDialog(
+      title: 'Add Bus',
+      content: Form(
+        key: formKeyBus,
+        child: Column(
+          children: [
+            TextFormField(
+              controller: busNameController,
+              decoration: const InputDecoration(
+                labelText: 'Bus Name',
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter bus name';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            TextFormField(
+              controller: licensePlateController,
+              decoration: const InputDecoration(
+                labelText: 'License Plate',
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter license plate';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            DropdownButtonFormField(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Bus Stop Line',
+                ),
+                // value: _busStopLine,
+
+                onChanged: (value) {
+                  busStopLine = value.toString();
+                },
+                items: [
+                  ...busController.busLineList.map((e) {
+                    return DropdownMenuItem(
+                      value: e['Id'],
+                      child: Text(e['name']),
+                    );
+                  }).toList()
+                ]),
+            ElevatedButton(
+                onPressed: () {
+                  if (formKeyBus.currentState!.validate()) {
+                    if (busStopLine == '') {
+                      Fluttertoast.showToast(
+                          msg: 'Please select bus stop line',
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.red,
+                          textColor: Colors.white,
+                          fontSize: 16.0);
+                      return;
+                    }
+                    if (bus != null) {
+                      // delete old bus
+                      rawBusList.removeWhere((element) =>
+                          element.licensePlate == bus.licensePlate);
+                      rawBusList.add(BusModel(
+                        id: bus.id,
+                        name: busNameController.text,
+                        licensePlate: licensePlateController.text,
+                        busStopLine: busStopLine,
+                        // owner: user.value!.uid,
+                        status: false,
+                        onward: false,
+                      ));
+                      FirebaseFirestore.instance
+                          .collection('bus_data')
+                          .doc(bus.id)
+                          .update({
+                        'name': busNameController.text,
+                        'LP': licensePlateController.text,
+                        'bus_stop_line': int.parse(busStopLine),
+                      });
+                    } else {
+                      rawBusList.add(BusModel(
+                        id: '',
+                        name: busNameController.text,
+                        licensePlate: licensePlateController.text,
+                        busStopLine: busStopLine,
+                        // owner: user.value!.uid,
+                        status: false,
+                        onward: false,
+                      ));
+                      FirebaseFirestore.instance.collection('bus_data').add({
+                        'name': busNameController.text,
+                        'LP': licensePlateController.text,
+                        'bus_stop_line': int.parse(busStopLine),
+                        'owner': user.value!.uid,
+                      }).then((value) {
+                        // update document id
+                        FirebaseFirestore.instance
+                            .collection('bus_data')
+                            .doc(value.id)
+                            .update({
+                          'documentId': value.id,
+                        });
+                      });
+                    }
+                  }
+                  Get.back();
+                },
+                child: Text(bus == null ? 'Add' : 'Update')),
+          ],
+        ),
+      ));
 }

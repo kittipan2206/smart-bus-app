@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -8,6 +6,7 @@ import 'package:smart_bus/common/style/app_colors.dart';
 import 'package:smart_bus/globals.dart';
 import 'package:smart_bus/model/bus_model.dart';
 import 'package:smart_bus/model/bus_stop_model.dart';
+import 'package:smart_bus/presentation/pages/authen/register_page.dart';
 import 'package:smart_bus/presentation/pages/home/bus_detail_page.dart';
 import 'package:smart_bus/presentation/pages/home/bus_stop_list.dart';
 import 'package:smart_bus/presentation/pages/home/components/bus_list.dart';
@@ -23,16 +22,6 @@ class HomeBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (isLogin.value) {
-      // listen to user info
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(FirebaseAuth.instance.currentUser!.uid)
-          .get()
-          .then((event) {
-        userInfo.value = event.data()!;
-      });
-    }
     final List<String> names = [
       'Select bus',
       'Journey plan',
@@ -120,32 +109,127 @@ class HomeBody extends StatelessWidget {
                   if (isStreamBusLocation.value) {
                     return Column(
                       children: [
-                        Center(
-                          child: // share bus location button
-                              ElevatedButton(
-                            onPressed: () {
-                              isStreamBusLocation.value = false;
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                            ),
-                            child: const Text("Stop share bus location"),
-                          ),
-                        ),
                         const SizedBox(
                           height: 10,
                         ),
-                        Text("Your location: ${userLatLng.toString()}"),
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Lottie.asset(
+                              'assets/lottie/moving-bus.json',
+                              fit: BoxFit.cover,
+                            ),
+                            Column(
+                              children: [
+                                const Text(
+                                  'Sharing bus location',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        '${selectedBusSharingId.value!.name!} - ${selectedBusSharingId.value!.licensePlate!}',
+                                        style: const TextStyle(
+                                            fontSize: 30,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.blue),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    // change bus button
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        final driverBuses =
+                                            busList.where((element) {
+                                          return element.owner ==
+                                              user.value!.uid;
+                                        }).toList();
+                                        changeBusDialog(driverBuses);
+                                      },
+                                      child: const Text('Change bus'),
+                                    ),
+                                  ],
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    isStreamBusLocation.value = false;
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                  ),
+                                  child: const Text("Stop"),
+                                ),
+                              ],
+                            ),
+                          ],
+                        )
                       ],
                     );
                   } else {
+                    final driverBuses = busList.where((element) {
+                      return element.owner == user.value!.uid;
+                    }).toList();
+                    if (driverBuses.isEmpty) {
+                      return Column(
+                        children: [
+                          const Text(
+                            'You have not added any bus yet',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.blue),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              addBusDialog(rawBusList: busList);
+                            },
+                            child: const Text('Add bus'),
+                          ),
+                        ],
+                      );
+                    }
                     return Center(
                       child: // stop share bus location button
+                          Column(
+                        children: [
+                          Row(
+                            children: [
+                              const Text('Select bus: '),
+                              // dialog button to select bus
+                              ElevatedButton(
+                                onPressed: () {
+                                  changeBusDialog(driverBuses);
+                                },
+                                child: Obx(
+                                  () {
+                                    if (selectedBusSharingId.value == null) {
+                                      return const Text('Select bus');
+                                    }
+                                    return Text(// selected bus
+                                        '${selectedBusSharingId.value!.name!} - ${selectedBusSharingId.value!.licensePlate!}');
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
                           ElevatedButton(
-                        onPressed: () {
-                          isStreamBusLocation.value = true;
-                        },
-                        child: const Text('Share bus location'),
+                            onPressed: () {
+                              isStreamBusLocation.value = true;
+                            },
+                            child: const Text('Share bus location'),
+                          ),
+                        ],
                       ),
                     );
                   }
@@ -338,6 +422,45 @@ class HomeBody extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void changeBusDialog(driverBuses) {
+    Get.defaultDialog(
+      title: 'Select bus',
+      content: Column(
+        children: [
+          ...List.generate(
+            driverBuses.length,
+            (index) => ListTile(
+              onTap: () {
+                selectedBusSharingId.value = driverBuses[index];
+                Get.back();
+              },
+              title: Text(
+                driverBuses[index].name ?? '',
+              ),
+              subtitle: Text(
+                driverBuses[index].licensePlate ?? '',
+              ),
+              leading: CircleAvatar(
+                child: Text(
+                  driverBuses[index].name![0].toUpperCase(),
+                ),
+              ),
+              trailing: Obx(() {
+                if (selectedBusSharingId.value == driverBuses[index]) {
+                  return const Icon(
+                    Icons.check,
+                    color: Colors.green,
+                  );
+                }
+                return const SizedBox();
+              }),
+            ),
+          ),
+        ],
       ),
     );
   }

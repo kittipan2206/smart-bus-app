@@ -481,7 +481,7 @@ class _JourneyPlanPageState extends State<JourneyPlanPage> {
                           children: [
                             SizedBox(height: 10),
                             Text(
-                              'No result',
+                              'No results',
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,

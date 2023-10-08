@@ -10,6 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_bus/model/bus_model.dart';
+import 'package:smart_bus/services/firebase_services.dart';
 
 import 'model/bus_stop_model.dart';
 import 'package:http/http.dart' as http;
@@ -29,8 +30,10 @@ RxList<BusStopModel> busStopList = <BusStopModel>[].obs;
 Location currentLocation = Location();
 BusStopModel? nearestBusStop;
 Rx<bool> isStreamBusLocation = false.obs;
+Rx<BusModel?> selectedBusSharingId = Rx<BusModel?>(null);
 
 RxList<BusModel> busList = <BusModel>[].obs;
+RxList<BusModel> driverBusList = <BusModel>[].obs;
 
 late LocationData _locationData;
 Rx<LatLng> userLatLng = const LatLng(0, 0).obs;
@@ -80,31 +83,12 @@ Future<void> getCurrentLocation() async {
       userLatLng.value =
           LatLng(_locationData.latitude!, _locationData.longitude!);
       if (isStreamBusLocation.value) {
-        updateFirebaseBusLocation();
+        FirebaseServices.updateFirebaseBusLocation(user.value!.uid);
       }
     });
   } catch (e) {
     Fluttertoast.showToast(msg: 'Error: $e');
   }
-}
-
-updateFirebaseBusLocation() async {
-  // update bus location where field owner is busDriverUID
-  await FirebaseFirestore.instance
-      .collection('bus_data')
-      .where('owner', isEqualTo: user.value!.uid)
-      .get()
-      .then((value) async {
-    // logger.i(value.docs.length);
-    for (var element in value.docs) {
-      await FirebaseFirestore.instance
-          .collection('bus_data')
-          .doc(element.id)
-          .update({
-        'location': GeoPoint(_locationData.latitude!, _locationData.longitude!)
-      });
-    }
-  });
 }
 
 Future<void> getBusList() async {
