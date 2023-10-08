@@ -176,13 +176,46 @@ class FirebaseServices {
           'https://www.googleapis.com/auth/contacts.readonly',
         ],
       );
-      GoogleSignInAccount? user = await googleSignIn.signIn();
-      GoogleSignInAuthentication? userAuth = await user?.authentication;
+      GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      GoogleSignInAuthentication? userAuth = await googleUser?.authentication;
       final auth = FirebaseAuth.instance;
 
       await auth.signInWithCredential(GoogleAuthProvider.credential(
           idToken: userAuth!.idToken, accessToken: userAuth.accessToken));
       Fluttertoast.showToast(msg: 'Login success');
+      user.value = auth.currentUser;
+      // if dost not have user info
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.value!.uid)
+          .get()
+          .then((value) async {
+        if (!value.exists) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.value!.uid)
+              .set({
+            'roles': 'user',
+          });
+          FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.value!.uid)
+              .snapshots()
+              .listen((event) {
+            userInfo.value = event.data()!;
+          });
+        } else {
+          // listen to user info
+          FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.value!.uid)
+              .snapshots()
+              .listen((event) {
+            userInfo.value = event.data()!;
+          });
+        }
+      });
+
       isLogin.value = true;
       Get.back();
     } catch (e) {
