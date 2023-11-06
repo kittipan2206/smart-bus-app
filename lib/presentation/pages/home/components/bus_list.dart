@@ -137,7 +137,6 @@ class BusList extends StatelessWidget {
                                           busController.busLineList[index]
                                               ["image"],
                                           height: 200,
-                                          width: 200,
                                           fit: BoxFit.cover,
                                         )),
 

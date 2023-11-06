@@ -3,13 +3,16 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart' as latLng;
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_bus/model/bus_model.dart';
+import 'package:smart_bus/presentation/pages/shared_components/dialog_manager.dart';
 import 'package:smart_bus/services/firebase_services.dart';
 
 import 'model/bus_stop_model.dart';
@@ -31,10 +34,9 @@ Location currentLocation = Location();
 BusStopModel? nearestBusStop;
 Rx<bool> isStreamBusLocation = false.obs;
 Rx<BusModel?> selectedBusSharingId = Rx<BusModel?>(null);
-
+const distanceInMetersThreshold = 100;
 RxList<BusModel> busList = <BusModel>[].obs;
 RxList<BusModel> driverBusList = <BusModel>[].obs;
-
 late LocationData _locationData;
 Rx<LatLng> userLatLng = const LatLng(0, 0).obs;
 Future<void> getCurrentLocation() async {
@@ -85,10 +87,38 @@ Future<void> getCurrentLocation() async {
       if (isStreamBusLocation.value) {
         FirebaseServices.updateFirebaseBusLocation(user.value!.uid);
       }
+
+      checkIsNearBusStop(distanceInMetersThreshold);
     });
   } catch (e) {
     Fluttertoast.showToast(msg: 'Error: $e');
   }
+}
+
+void checkIsNearBusStop(threshold) {
+  final busStopInLine = busStopList
+      .where((element) => element.line['line']
+          .contains(selectedBusSharingId.value!.busStopLine))
+      .toList();
+  if (busStopList.isNotEmpty) {
+    const distance = latLng.Distance();
+    for (var element in busStopInLine) {
+      double meter = distance.as(
+        latLng.LengthUnit.Meter,
+        latLng.LatLng(element.location.latitude, element.location.longitude),
+        latLng.LatLng(userLatLng.value.latitude, userLatLng.value.longitude),
+      );
+
+      if (meter < threshold) {
+        logger.i('nearest bus stop: ${element.name}');
+        showSelectedBusStop(element);
+      }
+    }
+  }
+}
+
+void showSelectedBusStop(BusStopModel busStop) {
+  DialogManager().showSelectNextBusStopDialog(busStop: busStop, alert: true);
 }
 
 Future<void> getBusList() async {
