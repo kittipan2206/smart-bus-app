@@ -56,6 +56,13 @@ class FirebaseServices {
     );
   }
 
+  static Future<void> updateBusNextStop(
+      {required String busId, required String nextStop}) async {
+    FirebaseFirestore.instance.collection('bus_data').doc(busId).update({
+      'nextBusStop': nextStop,
+    });
+  }
+
   static Future<void> getDriverBusList() async {
     await FirebaseFirestore.instance
         .collection('bus_data')

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:smart_bus/globals.dart';
 import 'package:smart_bus/model/bus_stop_model.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:smart_bus/services/firebase_services.dart';
 
 class DialogManager {
   void showDialog(String title, String message) {
@@ -90,6 +91,9 @@ class DialogManager {
                   return ListTile(
                     onTap: () {
                       // selectedBusStopIndex.value = index;
+                      FirebaseServices.updateBusNextStop(
+                          busId: selectedBusSharingId.value!.id!,
+                          nextStop: nextBusStopList[index].id);
                       FlutterRingtonePlayer.stop();
                       Get.back();
                     },
