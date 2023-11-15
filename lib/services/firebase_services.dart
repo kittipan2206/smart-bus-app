@@ -9,6 +9,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:smart_bus/globals.dart';
 import 'package:smart_bus/model/bus_model.dart';
 import 'package:smart_bus/model/bus_stop_model.dart';
+import 'package:smart_bus/model/review_model.dart';
 import 'package:smart_bus/presentation/pages/home/controller/bus_controller.dart';
 
 class FirebaseServices {
@@ -229,5 +230,17 @@ class FirebaseServices {
       Fluttertoast.showToast(msg: 'Login failed $e');
       logger.i(e);
     }
+  }
+
+  static Stream<List<ReviewModel>> getReviews(String busId) {
+    return FirebaseFirestore.instance
+        .collection('reviews')
+        .where('busId', isEqualTo: busId)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => ReviewModel.fromJson(doc.data()))
+          .toList();
+    });
   }
 }

@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -86,9 +85,8 @@ Future<void> getCurrentLocation() async {
           LatLng(_locationData.latitude!, _locationData.longitude!);
       if (isStreamBusLocation.value) {
         FirebaseServices.updateFirebaseBusLocation(user.value!.uid);
+        checkIsNearBusStop(distanceInMetersThreshold);
       }
-
-      checkIsNearBusStop(distanceInMetersThreshold);
     });
   } catch (e) {
     Fluttertoast.showToast(msg: 'Error: $e');
@@ -100,6 +98,7 @@ void checkIsNearBusStop(threshold) {
       .where((element) => element.line['line']
           .contains(selectedBusSharingId.value!.busStopLine))
       .toList();
+  logger.i('busStopInLine: $busStopInLine');
   if (busStopList.isNotEmpty) {
     const distance = latLng.Distance();
     for (var element in busStopInLine) {
