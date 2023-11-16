@@ -4,6 +4,7 @@ import 'package:maps_launcher/maps_launcher.dart';
 import 'package:smart_bus/common/style/app_colors.dart';
 import 'package:smart_bus/globals.dart';
 import 'package:smart_bus/model/bus_stop_model.dart';
+import 'package:smart_bus/services/firebase_services.dart';
 
 class BusInfoDialog extends StatelessWidget {
   const BusInfoDialog({super.key, required this.busStopInLine});
@@ -63,6 +64,8 @@ class BusInfoDialog extends StatelessWidget {
                           ? selectedBusStopIndex.value = -1
                           : selectedBusStopIndex.value =
                               busStopList.indexOf(busStopInLine);
+                      logger.i(busStopInLine.id);
+                      FirebaseServices.addHistory(busStop: busStopInLine);
                       Get.back();
                     },
                     child: Text(

@@ -73,4 +73,32 @@ class BusStopModel {
   void addAdjacentStop(BusStopModel busStop) {
     adjacentStops[busStop] = 1;
   }
+
+  factory BusStopModel.fromJson(Map<String, dynamic> json) {
+    return BusStopModel(
+      id: json['id'],
+      name: json['name'],
+      location: json['location'],
+      // status: json['status'],
+      // distance: json['distance'],
+      // duration: json['duration'],
+      distanceInMeters: json['distanceInMeters'],
+      address: json['address'],
+      durationInSeconds: json['durationInSeconds'],
+      line: json['line'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'location': location,
+        // 'status': status,
+        // 'distance': distance,
+        // 'duration': duration,
+        'distanceInMeters': distanceInMeters,
+        'address': address,
+        'durationInSeconds': durationInSeconds,
+        'line': line,
+      };
 }

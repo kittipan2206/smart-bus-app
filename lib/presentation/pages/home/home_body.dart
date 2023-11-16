@@ -14,7 +14,11 @@ import 'package:smart_bus/presentation/pages/home/components/courosel.dart';
 import 'package:smart_bus/presentation/pages/home/components/group_of_buttons.dart';
 import 'package:smart_bus/presentation/pages/home/components/profile_image.dart';
 import 'package:smart_bus/presentation/pages/home/components/selected_bus_widget.dart';
+import 'package:smart_bus/presentation/pages/home/history_page.dart';
 import 'package:smart_bus/presentation/pages/home/journey_plan_page.dart';
+import 'package:smart_bus/presentation/pages/home/profile_page.dart';
+import 'package:smart_bus/presentation/pages/home/select_bus_page.dart';
+import 'package:smart_bus/services/firebase_services.dart';
 import 'package:smart_bus/utils/unit.dart';
 
 class HomeBody extends StatelessWidget {
@@ -37,16 +41,16 @@ class HomeBody extends StatelessWidget {
 
     final List<Function()> onPresseds = [
       () {
-        Fluttertoast.showToast(msg: 'This feature is not available yet');
+        Get.to(() => const SelectBusPage());
       },
       () {
         Get.to(() => const JourneyPlanPage());
       },
       () {
-        Fluttertoast.showToast(msg: 'This feature is not available yet');
+        Get.to(() => const HistoryPage());
       },
       () {
-        Fluttertoast.showToast(msg: 'This feature is not available yet');
+        Get.to(() => ProfilePage());
       },
     ];
 
@@ -148,7 +152,7 @@ class HomeBody extends StatelessWidget {
                                       onPressed: () {
                                         final driverBuses =
                                             busList.where((element) {
-                                          return element.owner ==
+                                          return element.ownerId ==
                                               user.value!.uid;
                                         }).toList();
                                         changeBusDialog(driverBuses);
@@ -158,7 +162,10 @@ class HomeBody extends StatelessWidget {
                                   ],
                                 ),
                                 ElevatedButton(
-                                  onPressed: () {
+                                  onPressed: () async {
+                                    await FirebaseServices.updateStatusBus(
+                                        busId: selectedBusSharingId.value!.id!,
+                                        status: false);
                                     isStreamBusLocation.value = false;
                                   },
                                   style: ElevatedButton.styleFrom(
@@ -174,7 +181,7 @@ class HomeBody extends StatelessWidget {
                     );
                   } else {
                     final driverBuses = busList.where((element) {
-                      return element.owner == user.value!.uid;
+                      return element.ownerId == user.value!.uid;
                     }).toList();
                     if (driverBuses.isEmpty) {
                       return Column(
@@ -224,7 +231,10 @@ class HomeBody extends StatelessWidget {
                             ],
                           ),
                           ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
+                              await FirebaseServices.updateStatusBus(
+                                  busId: selectedBusSharingId.value!.id!,
+                                  status: true);
                               isStreamBusLocation.value = true;
                             },
                             child: const Text('Share bus location'),

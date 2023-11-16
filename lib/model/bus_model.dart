@@ -6,7 +6,7 @@ class BusModel {
   String? licensePlate;
   dynamic busStopLine;
   GeoPoint? location;
-  String? owner;
+  String? ownerId;
   bool? status;
   String? nextBusStop;
   bool? onward;
@@ -18,7 +18,7 @@ class BusModel {
     this.licensePlate,
     this.busStopLine,
     this.location,
-    this.owner,
+    this.ownerId,
     this.status,
     this.nextBusStop,
     this.onward,
@@ -32,7 +32,7 @@ class BusModel {
       licensePlate: json['LP'],
       busStopLine: json['bus_stop_line'],
       location: json['location'],
-      owner: json['owner'],
+      ownerId: json['owner'],
       status: json['status'],
       nextBusStop: json['nextBusStop'],
       onward: json['onward'],
@@ -46,7 +46,7 @@ class BusModel {
         'LP': licensePlate,
         'busStopLine': busStopLine,
         'location': location,
-        'owner': owner,
+        'owner': ownerId,
         'status': status,
         'nextBusStop': nextBusStop,
         'onward': onward,
@@ -55,6 +55,6 @@ class BusModel {
 
   @override
   String toString() {
-    return 'BusModel{id: $id, name: $name, licensePlate: $licensePlate, busStopLine: $busStopLine, location: $location, owner: $owner, status: $status, nextBusStop: $nextBusStop, onward: $onward, matrix: $matrix}';
+    return 'BusModel{id: $id, name: $name, licensePlate: $licensePlate, busStopLine: $busStopLine, location: $location, owner: $ownerId, status: $status, nextBusStop: $nextBusStop, onward: $onward, matrix: $matrix}';
   }
 }

@@ -91,6 +91,7 @@ class DialogManager {
                   return ListTile(
                     onTap: () {
                       // selectedBusStopIndex.value = index;
+                      logger.i(nextBusStopList[index].id);
                       FirebaseServices.updateBusNextStop(
                           busId: selectedBusSharingId.value!.id!,
                           nextStop: nextBusStopList[index].id);

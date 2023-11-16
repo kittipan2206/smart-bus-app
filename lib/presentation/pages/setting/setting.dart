@@ -70,7 +70,7 @@ class _SettingPageState extends State<SettingPage> {
                 // loop bus list
                 Obx(() {
                   final driverBus = busList.where((element) {
-                    return element.owner == user.value!.uid;
+                    return element.ownerId == user.value!.uid;
                   }).toList();
                   if (driverBus.isNotEmpty) {
                     return Card(

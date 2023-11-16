@@ -261,22 +261,24 @@ class _JourneyPlanPageState extends State<JourneyPlanPage> {
                         ),
                       if (resultPath.isNotEmpty)
                         Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Shortest path: ${resultPath.length} stops',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'From ${resultPath.first.name} to ${resultPath.last.name}',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            // bus stop line infographic
+                            TextButton(
+                                onPressed: () {
+                                  showWhatIsBusLine(busController.busLineList
+                                          .where((element) =>
+                                              element['Id'] ==
+                                              resultPath
+                                                  .first.line['line'].first)
+                                          .first['color'] ??
+                                      0);
+                                },
+                                child: const Text(
+                                  'How to read bus stop line?',
+                                  style: TextStyle(color: Colors.blue),
+                                )),
+
                             const SizedBox(height: 10),
                             const Row(
                               children: [
@@ -553,5 +555,133 @@ class _JourneyPlanPageState extends State<JourneyPlanPage> {
     }
 
     return path;
+  }
+
+  void showWhatIsBusLine(int color) {
+    final BusController busController = Get.find();
+    logger.d(busController.busLineList);
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Bus stop line'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Bus stop line is the bus line that pass through the bus stop',
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Example:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        // code color blue is 0xff3f51b5, red is 0xffe53935, green is 0xff43a047, pink is 0xffe91e63, orange is 0xffff9800
+                        color: Color(busController.busLineList
+                                .where((element) => element['Id'] == 1)
+                                .first['color'] ??
+                            0),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: const Text(
+                        '1',
+                        style: TextStyle(color: AppColors.white),
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    const Expanded(
+                      child: Text(
+                        'This bus stop is on bus line 1',
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        // code color blue is 0xff3f51b5, red is 0xffe53935, green is 0xff43a047, pink is 0xffe91e63, orange is 0xffff9800
+                        color: Color(busController.busLineList
+                                .where((element) => element['Id'] == 1)
+                                .first['color'] ??
+                            0),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: const Text(
+                        '1',
+                        style: TextStyle(color: AppColors.white),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        // code color blue is 0xff3f51b5, red is 0xffe53935, green is 0xff43a047, pink is 0xffe91e63, orange is 0xffff9800
+                        color: Color(busController.busLineList
+                                .where((element) => element['Id'] == 2.1)
+                                .first['color'] ??
+                            0),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: const Text(
+                        '2.1',
+                        style: TextStyle(color: AppColors.white),
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    const Expanded(
+                      child: Text(
+                        'This bus stop is on bus line 1 and 2 route 1',
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                ExpansionTile(
+                    collapsedTextColor: AppColors.orange,
+                    title: const Text('Show all bus stop line'),
+                    children: [
+                      ...busController.busLineList.map((e) {
+                        logger.d(e);
+                        return ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              // code color blue is 0xff3f51b5, red is 0xffe53935, green is 0xff43a047, pink is 0xffe91e63, orange is 0xffff9800
+                              color: Color(e['color'] ?? 0),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Text(
+                              e['Id'].toString(),
+                              style: const TextStyle(color: AppColors.white),
+                            ),
+                          ),
+                          title: Text(e['name'] ?? ''),
+                        );
+                      }).toList()
+                    ]),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Get.back();
+            },
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 }

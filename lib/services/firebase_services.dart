@@ -9,6 +9,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:smart_bus/globals.dart';
 import 'package:smart_bus/model/bus_model.dart';
 import 'package:smart_bus/model/bus_stop_model.dart';
+import 'package:smart_bus/model/history_model.dart';
 import 'package:smart_bus/model/review_model.dart';
 import 'package:smart_bus/presentation/pages/home/controller/bus_controller.dart';
 
@@ -55,6 +56,13 @@ class FirebaseServices {
         }
       },
     );
+  }
+
+  static Future<void> updateStatusBus(
+      {required String busId, required bool status}) async {
+    FirebaseFirestore.instance.collection('bus_data').doc(busId).update({
+      'status': status,
+    });
   }
 
   static Future<void> updateBusNextStop(
@@ -232,6 +240,48 @@ class FirebaseServices {
     }
   }
 
+  static Stream<List<BusModel>> getStreamBusData() {
+    return FirebaseFirestore.instance
+        .collection('bus_data')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => BusModel.fromJson(doc.data())).toList();
+    });
+  }
+
+  static Stream<List<HistoryModel>> getStreamHistoryData() {
+    return FirebaseFirestore.instance
+        .collection('history')
+        .where('user.id', isEqualTo: user.value!.uid)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        logger.i(doc.data());
+        return HistoryModel.fromJson(doc.data());
+      }).toList();
+    });
+  }
+
+  static Future<BusModel> getBus(String busId) async {
+    return await FirebaseFirestore.instance
+        .collection('bus_data')
+        .doc(busId)
+        .get()
+        .then((value) {
+      return BusModel.fromJson(value.data()!);
+    });
+  }
+
+  static Future<BusStopModel> getBusStop(String busStopId) async {
+    return await FirebaseFirestore.instance
+        .collection('bus_stop_data')
+        .doc(busStopId)
+        .get()
+        .then((value) {
+      return BusStopModel.fromJson(value.data()!);
+    });
+  }
+
   static Stream<List<ReviewModel>> getReviews(String busId) {
     return FirebaseFirestore.instance
         .collection('reviews')
@@ -241,6 +291,38 @@ class FirebaseServices {
       return snapshot.docs
           .map((doc) => ReviewModel.fromJson(doc.data()))
           .toList();
+    });
+  }
+
+  static Stream<double> getAverageRating(String busId) {
+    return FirebaseFirestore.instance
+        .collection('reviews')
+        .where('busId', isEqualTo: busId)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.docs.isEmpty) {
+        return 0;
+      } else {
+        return snapshot.docs
+                .map((doc) => ReviewModel.fromJson(doc.data()))
+                .map((review) => review.rating)
+                .reduce((value, element) => value + element) /
+            snapshot.docs.length;
+      }
+    });
+  }
+
+  static Future<void> addHistory({
+    required BusStopModel busStop,
+  }) async {
+    await FirebaseFirestore.instance.collection('history').add({
+      'busStop': busStop.toJson(),
+      'time': DateTime.now(),
+      'user': UserModel(
+        id: user.value!.uid,
+        name: user.value!.displayName!,
+        avatarUrl: user.value!.photoURL!,
+      ).toJson(),
     });
   }
 }
