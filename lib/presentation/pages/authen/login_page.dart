@@ -242,8 +242,10 @@ class _LoginPageState extends State<LoginPage> {
                                                   email: EmailController.text);
                                               Fluttertoast.showToast(
                                                   msg: 'Email sent');
+                                              // ignore: use_build_context_synchronously
                                               Navigator.pop(context);
                                               // show already sent dialog
+                                              // ignore: use_build_context_synchronously
                                               showDialog(
                                                   context: context,
                                                   builder:
@@ -342,7 +344,7 @@ class _LoginPageState extends State<LoginPage> {
                                 children: [
                                   Image(
                                     image: NetworkImage(
-                                        "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/2048px-Google_%22G%22_Logo.svg.png"),
+                                        "https://static-00.iconduck.com/assets.00/google-icon-2048x2048-czn3g8x8.png"),
                                     height: 20,
                                   ),
                                   SizedBox(

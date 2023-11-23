@@ -52,11 +52,7 @@ class LocationServices {
       }
       userLatLng.value =
           LatLng(currentLocation.latitude!, currentLocation.longitude!);
-      logger.i(
-          'location changed ${currentLocation.latitude} - ${currentLocation.longitude}');
-      // Use current location
-      // AppVariable.locationData.value = currentLocation;
-      // logger.i('location changed');
+
       if (AppVariable.isStreamBusLocation.value) {
         FirebaseServices.updateFirebaseBusLocation('busDriverUID');
       }

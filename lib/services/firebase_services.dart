@@ -17,6 +17,7 @@ class FirebaseServices {
   // get bus controller
   static BusController busController = Get.find<BusController>();
   static void updateFirebaseBusLocation(busDriverUID) async {
+    logger.i('updateFirebaseBusLocation');
     // update bus location where field owner is busDriverUID
     await FirebaseFirestore.instance
         .collection('bus_data')
@@ -24,7 +25,6 @@ class FirebaseServices {
         .where('documentId', isEqualTo: selectedBusSharingId.value!.id)
         .get()
         .then((value) async {
-      logger.i(value.docs.length);
       for (final element in value.docs) {
         await FirebaseFirestore.instance
             .collection('bus_data')
@@ -51,7 +51,6 @@ class FirebaseServices {
             // remove old bus
             busList.removeWhere((element) => element.id == event.id);
             busList.add(BusModel.fromJson(event.data()!));
-            logger.i('allBusList: $busList');
           });
         }
       },
@@ -243,6 +242,17 @@ class FirebaseServices {
   static Stream<List<BusModel>> getStreamBusData() {
     return FirebaseFirestore.instance
         .collection('bus_data')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => BusModel.fromJson(doc.data())).toList();
+    });
+  }
+
+  static Stream<List<BusModel>> getStreamBusByLines(List<dynamic> line) {
+    return FirebaseFirestore.instance
+        .collection('bus_data')
+        .where('bus_stop_line', whereIn: line)
+        .orderBy('bus_stop_line', descending: false)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) => BusModel.fromJson(doc.data())).toList();

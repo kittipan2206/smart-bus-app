@@ -73,13 +73,9 @@ Future<void> getCurrentLocation() async {
     _locationData = await location.getLocation();
     userLatLng.value =
         LatLng(_locationData.latitude!, _locationData.longitude!);
-    logger.i(
-        'location changed ${_locationData.latitude} - ${_locationData.longitude}');
 
     location.onLocationChanged.listen((LocationData currentLocation) {
       // Use current location
-      logger.i(
-          'location changed ${currentLocation.latitude} - ${currentLocation.longitude}');
       _locationData = currentLocation;
       userLatLng.value =
           LatLng(_locationData.latitude!, _locationData.longitude!);
@@ -98,7 +94,6 @@ void checkIsNearBusStop(threshold) {
       .where((element) => element.line['line']
           .contains(selectedBusSharingId.value!.busStopLine))
       .toList();
-  logger.i('busStopInLine: $busStopInLine');
   if (busStopList.isNotEmpty) {
     const distance = latLng.Distance();
     for (var element in busStopInLine) {
@@ -109,7 +104,6 @@ void checkIsNearBusStop(threshold) {
       );
 
       if (meter < threshold) {
-        logger.i('nearest bus stop: ${element.name}');
         showSelectedBusStop(element);
       }
     }
@@ -128,7 +122,6 @@ Future<void> getBusList() async {
           .get()
           .then(
           (value) async {
-            logger.i(value.docs.length);
             for (var element in value.docs) {
               await FirebaseFirestore.instance
                   .collection('bus_data')
@@ -136,7 +129,6 @@ Future<void> getBusList() async {
                   .get()
                   .then((value) async {
                 busList.add(BusModel.fromJson(value.data()!));
-                logger.i('allBusList: $busList');
               });
             }
           },
@@ -150,8 +142,6 @@ Future<void> getBusList() async {
                   .snapshots()
                   .listen((event) async {
                 busList.add(BusModel.fromJson(event.data()!));
-
-                logger.i('allBusList: $busList');
               });
             }
           },
@@ -162,7 +152,6 @@ Future<dynamic> getDistance({required LatLng busLatLng}) async {
   String url =
       'https://maps.googleapis.com/maps/api/distancematrix/json?destinations=${userLatLng.value.latitude},${userLatLng.value.longitude}&origins=${busLatLng.latitude},${busLatLng.longitude}&key=AIzaSyCaGjSBHkRCXtTB8u0H9yeErCPg6xDVLD8';
   try {
-    logger.i("user lat long api get$userLatLng");
     var response = await http.get(
         Uri.parse(
           url,
@@ -184,7 +173,6 @@ Future<dynamic> getDistance({required LatLng busLatLng}) async {
 }
 
 Future<void> getDistanceDuration() async {
-  logger.i('get this api$userLatLng');
   String url = 'https://api.openrouteservice.org/v2/matrix/$profile';
 
   Map<String, dynamic> jsonPayload = {

@@ -4,19 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:smart_bus/globals.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:smart_bus/model/bus_model.dart';
 import 'package:smart_bus/model/review_model.dart';
 import 'package:smart_bus/services/firebase_services.dart';
 
 class BusDetailPage extends StatelessWidget {
-  BusDetailPage({Key? key, required this.busIndex}) : super(key: key);
-  final int busIndex;
+  BusDetailPage({Key? key, required this.bus}) : super(key: key);
+  final BusModel bus;
 
   final RxBool isFavorite = false.obs;
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final bus = busList[busIndex];
       return Scaffold(
         appBar: AppBar(
           title: Text(bus.name!),
@@ -114,7 +114,7 @@ class BusDetailPage extends StatelessWidget {
           ),
         ),
         StreamBuilder<double?>(
-          stream: FirebaseServices.getAverageRating(busList[busIndex].id!),
+          stream: FirebaseServices.getAverageRating(bus.id!),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return Text('Error: ${snapshot.error}');
@@ -176,7 +176,7 @@ class BusDetailPage extends StatelessWidget {
         ),
 
         StreamBuilder<List<ReviewModel>>(
-          stream: FirebaseServices.getReviews(busList[busIndex].id!),
+          stream: FirebaseServices.getReviews(bus.id!),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return Text('Error: ${snapshot.error}');
@@ -433,14 +433,13 @@ class BusDetailPage extends StatelessWidget {
             final newReview = ReviewModel(
               id: '',
               user: UserModel(
-                id: user!.uid,
-                name: user.displayName!,
-                avatarUrl: user.photoURL!,
-              ),
+                  id: user!.uid,
+                  name: user.displayName!,
+                  avatarUrl: user.photoURL ?? "No image"),
               content: controller.text,
               createdAt: DateTime.now(),
               rating: _rating.toInt(),
-              busId: busList[busIndex].id!,
+              busId: bus.id!,
             );
             FirebaseFirestore.instance
                 .collection('reviews')

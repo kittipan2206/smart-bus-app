@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:smart_bus/common/style/app_colors.dart';
 import 'package:smart_bus/globals.dart';
 import 'package:smart_bus/model/bus_model.dart';
-import 'package:smart_bus/model/bus_stop_model.dart';
 import 'package:smart_bus/presentation/pages/authen/register_page.dart';
 import 'package:smart_bus/presentation/pages/home/bus_detail_page.dart';
 import 'package:smart_bus/presentation/pages/home/bus_stop_list.dart';
-import 'package:smart_bus/presentation/pages/home/components/bus_list.dart';
+import 'package:smart_bus/presentation/pages/home/components/bus_line_list.dart';
 import 'package:smart_bus/presentation/pages/home/components/courosel.dart';
 import 'package:smart_bus/presentation/pages/home/components/group_of_buttons.dart';
 import 'package:smart_bus/presentation/pages/home/components/profile_image.dart';
@@ -27,7 +25,7 @@ class HomeBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<String> names = [
-      'Select bus',
+      'See all buses',
       'Journey plan',
       'History',
       'Profile',
@@ -318,88 +316,236 @@ class HomeBody extends StatelessWidget {
                                   color: AppColors.blue),
                             );
                           }
+                          return StreamBuilder<List<BusModel>>(
+                              stream: FirebaseServices.getStreamBusByLines(
+                                  busStopList[selectedBusStopIndex.value]
+                                      .line['line']),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasError) {
+                                  return const Center(
+                                    child: Text('Something went wrong'),
+                                  );
+                                }
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
+                                if (snapshot.data == null ||
+                                    snapshot.data!.isEmpty) {
+                                  return const Text(
+                                    'There is no bus at this bus stop',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.blue),
+                                  );
+                                }
+                                final busList = snapshot.data!;
+                                final List<BusModel> buses =
+                                    busList.where((bus) {
+                                  final status = bus.status ?? false;
+                                  return status;
+                                }).toList();
 
-                          final BusStopModel busStop =
-                              busStopList[selectedBusStopIndex.value];
+                                if (buses.isEmpty) {
+                                  return const Text(
+                                    'There is no bus at this bus stop',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.blue),
+                                  );
+                                }
+                                var nearestBus = buses.first;
 
-                          final List<BusModel> buses = busList.where((bus) {
-                            final status = bus.status ?? false;
-                            return busStop.line['line']
-                                    .contains(bus.busStopLine) &&
-                                status;
-                          }).toList();
-                          if (buses.isEmpty) {
-                            return const Text(
-                              'There is no bus at this bus stop',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.blue),
-                            );
-                          }
-                          final nearestBus = buses.first;
-                          final busStopInLine = busStopList
-                              .where((element) => element.line['line']
-                                  .contains(nearestBus.busStopLine))
-                              .toList();
-                          final nearestDurationTime = UnitUtils.formatDuration(
-                              nearestBus.matrix!['duration']
-                                  [busStopInLine.indexOf(busStop)]);
+                                for (final bus in buses) {
+                                  final busStopInLine = busStopList
+                                      .where((element) => element.line['line']
+                                          .contains(bus.busStopLine))
+                                      .toList();
+                                  if (nearestBus.matrix == null) {
+                                    nearestBus = bus;
+                                    continue;
+                                  }
+                                  final durationTime = bus.matrix?['duration'][
+                                          busStopInLine.indexOf(busStopList[
+                                              selectedBusStopIndex.value])] ??
+                                      0;
 
-                          return Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Lottie.asset(
-                                'assets/lottie/moving-bus.json',
-                                fit: BoxFit.cover,
-                              ),
-                              InkWell(
-                                onTap: () {
-                                  Get.to(() => BusDetailPage(
-                                      busIndex: busList.indexOf(nearestBus)));
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(50),
-                                    color: Colors.orange.withOpacity(0.4),
-                                  ),
-                                  padding: const EdgeInsets.all(20),
-                                  // radius: 50,
-                                  // backgroundColor:
-                                  //     Colors.transparent.withOpacity(0.4),
-                                  // foregroundColor: Colors.white,
+                                  if (durationTime <
+                                          nearestBus.matrix?['duration'][
+                                              busStopInLine.indexOf(busStopList[
+                                                  selectedBusStopIndex
+                                                      .value])] ??
+                                      0) {
+                                    nearestBus = bus;
+                                  }
+                                }
+                                final nearestDurationTime =
+                                    UnitUtils.formatDuration(nearestBus
+                                            .matrix!['duration'][
+                                        busStopList
+                                            .where((element) =>
+                                                element.line['line'].contains(
+                                                    nearestBus.busStopLine))
+                                            .toList()
+                                            .indexOf(busStopList[
+                                                selectedBusStopIndex.value])]);
 
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Text(
-                                        'Next bus arrive in about',
-                                        style: TextStyle(
-                                          fontSize: 12,
+                                return Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Lottie.asset(
+                                      'assets/lottie/moving-bus.json',
+                                      fit: BoxFit.cover,
+                                    ),
+                                    InkWell(
+                                      onTap: () {
+                                        Get.to(() =>
+                                            BusDetailPage(bus: nearestBus));
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(50),
+                                          color: Colors.orange.withOpacity(0.4),
+                                        ),
+                                        padding: const EdgeInsets.all(20),
+                                        // radius: 50,
+                                        // backgroundColor:
+                                        //     Colors.transparent.withOpacity(0.4),
+                                        // foregroundColor: Colors.white,
+
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            const Text(
+                                              'Next bus arrive in about',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            Text(
+                                              nearestDurationTime,
+                                              // 'test',
+                                              style: const TextStyle(
+                                                  fontSize: 45,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppColors.blue),
+                                            ),
+                                            const Text(
+                                              'View more',
+                                              style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: AppColors.deepBLue),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      Text(
-                                        nearestDurationTime,
-                                        // 'test',
-                                        style: const TextStyle(
-                                            fontSize: 45,
-                                            fontWeight: FontWeight.bold,
-                                            color: AppColors.blue),
-                                      ),
-                                      const Text(
-                                        'View more',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: AppColors.deepBLue),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            ],
-                          );
+                                    )
+                                  ],
+                                );
+                              });
                         }),
+
+                        // Obx(() {
+                        //   if (selectedBusStopIndex.value == -1) {
+                        //     return const Text(
+                        //       'You have not selected any bus stop',
+                        //       textAlign: TextAlign.center,
+                        //       style: TextStyle(
+                        //           fontSize: 20,
+                        //           fontWeight: FontWeight.bold,
+                        //           color: AppColors.blue),
+                        //     );
+                        //   }
+
+                        //   final BusStopModel busStop =
+                        //       busStopList[selectedBusStopIndex.value];
+
+                        //   final List<BusModel> buses = busList.where((bus) {
+                        //     final status = bus.status ?? false;
+                        //     return busStop.line['line']
+                        //             .contains(bus.busStopLine) &&
+                        //         status;
+                        //   }).toList();
+                        //   if (buses.isEmpty) {
+                        //     return const Text(
+                        //       'There is no bus at this bus stop',
+                        //       textAlign: TextAlign.center,
+                        //       style: TextStyle(
+                        //           fontSize: 20,
+                        //           fontWeight: FontWeight.bold,
+                        //           color: AppColors.blue),
+                        //     );
+                        //   }
+                        //   final nearestBus = buses.first;
+                        //   final busStopInLine = busStopList
+                        //       .where((element) => element.line['line']
+                        //           .contains(nearestBus.busStopLine))
+                        //       .toList();
+                        //   final nearestDurationTime = UnitUtils.formatDuration(
+                        //       nearestBus.matrix!['duration']
+                        //           [busStopInLine.indexOf(busStop)]);
+
+                        //   return Stack(
+                        //     alignment: Alignment.center,
+                        //     children: [
+                        //       Lottie.asset(
+                        //         'assets/lottie/moving-bus.json',
+                        //         fit: BoxFit.cover,
+                        //       ),
+                        //       InkWell(
+                        //         onTap: () {
+                        //           Get.to(() => BusDetailPage(
+                        //               busIndex: busList.indexOf(nearestBus)));
+                        //         },
+                        //         child: Container(
+                        //           decoration: BoxDecoration(
+                        //             borderRadius: BorderRadius.circular(50),
+                        //             color: Colors.orange.withOpacity(0.4),
+                        //           ),
+                        //           padding: const EdgeInsets.all(20),
+                        //           // radius: 50,
+                        //           // backgroundColor:
+                        //           //     Colors.transparent.withOpacity(0.4),
+                        //           // foregroundColor: Colors.white,
+
+                        //           child: Column(
+                        //             mainAxisAlignment: MainAxisAlignment.center,
+                        //             children: [
+                        //               const Text(
+                        //                 'Next bus arrive in about',
+                        //                 style: TextStyle(
+                        //                   fontSize: 12,
+                        //                 ),
+                        //               ),
+                        //               Text(
+                        //                 nearestDurationTime,
+                        //                 // 'test',
+                        //                 style: const TextStyle(
+                        //                     fontSize: 45,
+                        //                     fontWeight: FontWeight.bold,
+                        //                     color: AppColors.blue),
+                        //               ),
+                        //               const Text(
+                        //                 'View more',
+                        //                 style: TextStyle(
+                        //                     fontSize: 12,
+                        //                     color: AppColors.deepBLue),
+                        //               ),
+                        //             ],
+                        //           ),
+                        //         ),
+                        //       )
+                        //     ],
+                        //   );
+                        // }),
                         Column(
                           children: [
                             Container(

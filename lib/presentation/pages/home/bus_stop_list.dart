@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smart_bus/presentation/pages/home/components/bus_list.dart';
+import 'package:smart_bus/presentation/pages/home/components/bus_line_list.dart';
 
 class BusStopListPage extends StatelessWidget {
   const BusStopListPage({super.key});

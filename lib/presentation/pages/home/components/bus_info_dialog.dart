@@ -65,7 +65,9 @@ class BusInfoDialog extends StatelessWidget {
                           : selectedBusStopIndex.value =
                               busStopList.indexOf(busStopInLine);
                       logger.i(busStopInLine.id);
-                      FirebaseServices.addHistory(busStop: busStopInLine);
+                      if (isLogin.value) {
+                        FirebaseServices.addHistory(busStop: busStopInLine);
+                      }
                       Get.back();
                     },
                     child: Text(

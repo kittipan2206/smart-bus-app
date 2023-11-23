@@ -54,7 +54,7 @@ class SelectBusPage extends StatelessWidget {
                 subtitle: Text(snapshot.data![index].licensePlate!),
                 onTap: () {
                   Get.to(() => BusDetailPage(
-                        busIndex: index,
+                        bus: snapshot.data![index],
                       ));
                 },
               );
