@@ -354,15 +354,17 @@ class BusDetailPage extends StatelessWidget {
                     }
                     return Card(
                       child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage:
-                                Image.network(review.user.avatarUrl,
-                                    errorBuilder: (BuildContext context,
-                                        Object exception,
-                                        StackTrace? stackTrace) {
-                              return const Icon(Icons.person);
-                            }).image,
-                          ),
+                          leading: review.user.avatarUrl == "No image"
+                              ? const Icon(Icons.person)
+                              : CircleAvatar(
+                                  backgroundImage:
+                                      Image.network(review.user.avatarUrl,
+                                          errorBuilder: (BuildContext context,
+                                              Object exception,
+                                              StackTrace? stackTrace) {
+                                    return const Icon(Icons.person);
+                                  }).image,
+                                ),
                           title: Text(review.user.name),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
