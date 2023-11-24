@@ -510,6 +510,7 @@ class HomeBody extends StatelessWidget {
                                         'Bus is there in about ${nearestTime < 60 ? 'less than a minute' : nearestDurationTime}',
                                     payload: {'uuid': 'uuid-test'},
                                     backgroundColor: Colors.orange,
+                                    locked: true,
                                     // progress: int.parse(nearestTime.toString()),
                                   ),
                                   actionButtons: [
