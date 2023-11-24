@@ -7,6 +7,7 @@ import 'package:smart_bus/firebase_options.dart';
 import 'package:smart_bus/presentation/pages/app/app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:smart_bus/services/notification_services.dart';
 
 Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +25,9 @@ Future<void> main() async {
     webAppWidth: 720,
     app: const App(),
   );
+  await NotificationController.initializeLocalNotifications();
+  await NotificationController.initializeIsolateReceivePort();
+
   runApp(runuableApp);
 }
 

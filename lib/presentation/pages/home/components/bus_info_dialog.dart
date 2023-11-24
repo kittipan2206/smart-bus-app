@@ -13,7 +13,60 @@ class BusInfoDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() => AlertDialog.adaptive(
-          title: const Text('Bus stop information'),
+          title: Row(
+            children: [
+              const Text('Bus stop information'),
+              // favorite bus stop
+              const Spacer(),
+              StreamBuilder<bool>(
+                  stream: FirebaseServices.isFavoriteBusStop(
+                      busStopId: busStopInLine.id),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return const Center(
+                        child: Text('Something went wrong'),
+                      );
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                    if (snapshot.data == null) {
+                      return const Center(
+                        child: Text('No data'),
+                      );
+                    }
+                    return IconButton(
+                        onPressed: () {
+                          if (isLogin.value) {
+                            if (snapshot.data!) {
+                              FirebaseServices.removeFavoriteBusStop(
+                                  busStopId: busStopInLine.id);
+                            } else {
+                              FirebaseServices.addFavoriteBusStop(
+                                  busStopId: busStopInLine.id);
+                            }
+                          }
+                        },
+                        icon: Icon(
+                          Icons.favorite,
+                          color: snapshot.data! ? Colors.red : Colors.grey,
+                        ));
+                  }),
+              // IconButton(
+              //     onPressed: () {
+              //       if (isLogin.value) {
+              //         FirebaseServices.addFavoriteBusStop(
+              //             busStopId: busStopInLine.id);
+              //       }
+              //     },
+              //     icon: Icon(
+              //       Icons.favorite,
+              //       color: Colors.red,
+              //     ))
+            ],
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.start,

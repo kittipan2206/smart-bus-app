@@ -2,6 +2,7 @@ import 'package:smart_bus/globals.dart';
 import 'package:smart_bus/presentation/pages/authen/login_page.dart';
 import 'package:smart_bus/presentation/pages/home/components/button.dart';
 import 'package:smart_bus/presentation/pages/home/components/home_bottom_nav.dart';
+import 'package:smart_bus/presentation/pages/home/favorite_page.dart';
 import 'package:smart_bus/presentation/pages/home/home_body.dart';
 // import 'package:smart_bus/presentation/pages/profile/profile_page.dart';
 import 'package:smart_bus/presentation/shared_controller/home/home_controller.dart';
@@ -25,7 +26,9 @@ class HomePage extends StatelessWidget {
               Obx(() => isLogin.value
                   ? CircularIconButton(
                       icon: Icons.favorite,
-                      onPressed: () {},
+                      onPressed: () {
+                        Get.to(() => const FavoritePage());
+                      },
                     )
                   : CircularIconButton(
                       icon: Icons.login_rounded,

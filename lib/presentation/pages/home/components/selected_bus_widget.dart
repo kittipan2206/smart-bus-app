@@ -53,6 +53,35 @@ class SelectedBusStopWidget extends StatelessWidget {
   Widget _buildBusStopCard(List<BusModel> busList) {
     return Obx(
       () {
+        // sort by duration time and status must be true
+        busList.sort((a, b) {
+          final busStopInLine = busStopList
+              .where((element) =>
+                  element.line['line'].contains(a.busStopLine) &&
+                  element.line['line'].contains(b.busStopLine))
+              .toList();
+          final durationTimeA = a.matrix != null
+              ? a.matrix!['duration'][busStopInLine
+                  .indexOf(busStopList[selectedBusStopIndex.value])]
+              : 0;
+          final durationTimeB = b.matrix != null
+              ? b.matrix!['duration'][busStopInLine
+                  .indexOf(busStopList[selectedBusStopIndex.value])]
+              : 0;
+          if (durationTimeA == 0) {
+            return 1;
+          }
+          if (durationTimeB == 0) {
+            return -1;
+          }
+          if (a.status != true || a.status == null) {
+            return 1;
+          }
+          if (b.status != true || b.status == null) {
+            return -1;
+          }
+          return durationTimeA.compareTo(durationTimeB);
+        });
         final BusStopModel busStop = busStopList[selectedBusStopIndex.value];
         return Container(
           margin: const EdgeInsets.only(top: 20.0),
@@ -102,18 +131,17 @@ class SelectedBusStopWidget extends StatelessWidget {
                         busStopInLine
                             .indexOf(busStopList[selectedBusStopIndex.value])])
                     : 'N/A';
-
                 return ListTile(
                   onTap: () {
                     Get.to(() => BusDetailPage(bus: bus));
                   },
                   trailing: Text(
-                    durationTime,
+                    bus.status ?? false ? durationTime : 'N/A',
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16.0,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.orange,
+                      color:
+                          bus.status ?? false ? AppColors.orange : Colors.grey,
                     ),
                   ),
                   shape: RoundedRectangleBorder(
@@ -124,33 +152,23 @@ class SelectedBusStopWidget extends StatelessWidget {
                     backgroundColor: bus.status ?? false
                         ? AppColors.orange
                         : Colors.grey[300],
-                    child: const Icon(
-                      Icons.directions_bus,
-                      color: AppColors.white,
-                      size: 20.0,
+                    child: Text(
+                      bus.name!.substring(0, 1),
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        bus.name!,
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                          color: bus.status ?? false
-                              ? AppColors.black
-                              : Colors.grey,
-                        ),
-                      ),
-                      // Text(
-                      //   busStop.getDistance(),
-                      //   style: TextStyle(
-                      //     fontSize: 16.0,
-                      //     fontWeight: FontWeight.bold,
-                      //   ),
-                      // ),
-                    ],
+                  title: Text(
+                    bus.name!,
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                      color:
+                          bus.status ?? false ? AppColors.black : Colors.grey,
+                    ),
                   ),
                 );
               }).toList(),

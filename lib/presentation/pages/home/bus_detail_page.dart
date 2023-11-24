@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:smart_bus/globals.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:smart_bus/model/bus_model.dart';
 import 'package:smart_bus/model/review_model.dart';
@@ -16,57 +15,55 @@ class BusDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(bus.name!),
-          actions: [
-            IconButton(
-              icon: Icon(
-                isFavorite.value ? Icons.star : Icons.star_border,
-              ),
-              onPressed: () => isFavorite.value = !isFavorite.value,
-            ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(bus.name!),
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(
+        //       isFavorite.value ? Icons.star : Icons.star_border,
+        //     ),
+        //     onPressed: () => isFavorite.value = !isFavorite.value,
+        //   ),
+        // ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: ListView(
+          children: [
+            _buildDetailCard('Bus Name', bus.name!),
+            _buildDetailCard('License Plate', bus.licensePlate!),
+            _buildDetailCard(
+                'Status', bus.status ?? false ? 'Active' : 'Inactive',
+                textColor: bus.status ?? false ? Colors.green : Colors.red),
+            _buildDetailCard('Next Bus Stop', bus.nextBusStop ?? "No data"),
+            _buildDetailCard('Onward', bus.onward ?? true ? 'Yes' : 'No',
+                textColor: bus.onward ?? true ? Colors.green : Colors.red),
+            _buildDetailCard('Bus Stop Line', bus.busStopLine!.toString()),
+            // _buldOwnerCard(bus.ownerId!),
+            buildReviewsSection(),
           ],
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: ListView(
-            children: [
-              _buildDetailCard('Bus Name', bus.name!),
-              _buildDetailCard('License Plate', bus.licensePlate!),
-              _buildDetailCard(
-                  'Status', bus.status ?? false ? 'Active' : 'Inactive',
-                  textColor: bus.status ?? false ? Colors.green : Colors.red),
-              _buildDetailCard('Next Bus Stop', bus.nextBusStop ?? "No data"),
-              _buildDetailCard('Onward', bus.onward ?? true ? 'Yes' : 'No',
-                  textColor: bus.onward ?? true ? Colors.green : Colors.red),
-              _buildDetailCard('Bus Stop Line', bus.busStopLine!.toString()),
-              _buildDetailCard('Owner', bus.id!),
-              buildReviewsSection(),
-            ],
-          ),
-        ),
-        // bottomNavigationBar: Container(
-        //   color: AppColors.lightBlue,
-        //   child: Padding(
-        //     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        //     child: ElevatedButton.icon(
-        //       style: ElevatedButton.styleFrom(
-        //         shape: RoundedRectangleBorder(
-        //           borderRadius: BorderRadius.circular(30),
-        //         ),
-        //       ),
-        //       onPressed: () {
-        //         // Navigate to community page or show community details
-        //       },
-        //       icon: const Icon(Icons.people),
-        //       label: const Text("Community"),
-        //     ),
-        //   ),
-        // ),
-      );
-    });
+      ),
+      // bottomNavigationBar: Container(
+      //   color: AppColors.lightBlue,
+      //   child: Padding(
+      //     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      //     child: ElevatedButton.icon(
+      //       style: ElevatedButton.styleFrom(
+      //         shape: RoundedRectangleBorder(
+      //           borderRadius: BorderRadius.circular(30),
+      //         ),
+      //       ),
+      //       onPressed: () {
+      //         // Navigate to community page or show community details
+      //       },
+      //       icon: const Icon(Icons.people),
+      //       label: const Text("Community"),
+      //     ),
+      //   ),
+      // ),
+    );
   }
 
   Widget _buildDetailCard(String title, String value, {Color? textColor}) {
@@ -216,8 +213,14 @@ class BusDetailPage extends StatelessWidget {
                     ),
                     child: ListTile(
                       leading: FirebaseAuth.instance.currentUser!.photoURL ==
-                              null
-                          ? const Icon(Icons.person)
+                                  null ||
+                              FirebaseAuth.instance.currentUser!.photoURL ==
+                                  "No image"
+                          ? const CircleAvatar(
+                              backgroundColor: Colors.grey,
+                              foregroundColor: Colors.white,
+                              child: Icon(Icons.person),
+                            )
                           : CircleAvatar(
                               backgroundImage: NetworkImage(
                                   FirebaseAuth.instance.currentUser!.photoURL!),
@@ -355,7 +358,11 @@ class BusDetailPage extends StatelessWidget {
                     return Card(
                       child: ListTile(
                           leading: review.user.avatarUrl == "No image"
-                              ? const Icon(Icons.person)
+                              ? const CircleAvatar(
+                                  backgroundColor: Colors.grey,
+                                  foregroundColor: Colors.white,
+                                  child: Icon(Icons.person),
+                                )
                               : CircleAvatar(
                                   backgroundImage:
                                       Image.network(review.user.avatarUrl,

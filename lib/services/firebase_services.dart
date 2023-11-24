@@ -165,6 +165,52 @@ class FirebaseServices {
     });
   }
 
+  static Future<void> addFavoriteBusStop({required String busStopId}) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.value!.uid)
+        .update({
+      'favoriteBusStop': FieldValue.arrayUnion([busStopId])
+    });
+  }
+
+  static Future<void> removeFavoriteBusStop({required String busStopId}) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.value!.uid)
+        .update({
+      'favoriteBusStop': FieldValue.arrayRemove([busStopId])
+    });
+  }
+
+  static Stream<bool> isFavoriteBusStop({required String busStopId}) {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.value!.uid)
+        .snapshots()
+        .map((event) {
+      if (event.data()!['favoriteBusStop'] == null) {
+        return false;
+      }
+      return event.data()!['favoriteBusStop'].contains(busStopId);
+    });
+  }
+
+  static Stream<List<BusStopModel>?> getFavoriteBusStop() {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.value!.uid)
+        .snapshots()
+        .map((event) {
+      List<BusStopModel> favoriteBusStopList = [];
+      for (var element in event.data()!['favoriteBusStop']) {
+        favoriteBusStopList.add(busStopList
+            .firstWhere((busStop) => busStop.id == element.toString()));
+      }
+      return favoriteBusStopList;
+    });
+  }
+
   static Future<void> getBusLine() async {
     FirebaseFirestore.instance.collection('bus_line').get().then((value) async {
       for (var element in value.docs) {
@@ -182,6 +228,21 @@ class FirebaseServices {
         });
       }
     });
+  }
+
+  static Future<User?> getUserById(String userId) async {
+    // get user by id firebase auth
+    try {
+      logger.i('getUserById');
+      User? user = await FirebaseAuth.instance
+          .userChanges()
+          .firstWhere((element) => element!.uid == userId);
+      logger.i('user: $user');
+      return user;
+    } catch (e) {
+      logger.i(e);
+      return null;
+    }
   }
 
   static Future loginWithGoogle() async {

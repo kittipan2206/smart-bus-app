@@ -1,3 +1,4 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
@@ -7,6 +8,7 @@ import 'package:smart_bus/model/bus_model.dart';
 import 'package:smart_bus/presentation/pages/authen/register_page.dart';
 import 'package:smart_bus/presentation/pages/home/bus_detail_page.dart';
 import 'package:smart_bus/presentation/pages/home/bus_stop_list.dart';
+import 'package:smart_bus/presentation/pages/home/components/bus_info_dialog.dart';
 import 'package:smart_bus/presentation/pages/home/components/bus_line_list.dart';
 import 'package:smart_bus/presentation/pages/home/components/courosel.dart';
 import 'package:smart_bus/presentation/pages/home/components/group_of_buttons.dart';
@@ -249,10 +251,19 @@ class HomeBody extends StatelessWidget {
                 height: 20,
               ),
               // carousel
-              const CarouselSlidePart(),
+              CarouselSlidePart(
+                item: const [
+                  'assets/images/ads1.png',
+                  'assets/images/ads2.png',
+                  'assets/images/ads3.png',
+                  'assets/images/ads4.png',
+                ],
+              ),
+
               const SizedBox(
                 height: 20,
               ),
+
               // Group of buttons
               GroupOfButtons(
                 children: [
@@ -277,13 +288,106 @@ class HomeBody extends StatelessWidget {
                               color: Colors.white,
                             ),
                           ),
-                          Text(names[index]),
+                          Text(names[index],
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontSize: 13)),
                         ],
                       ),
                     ),
                   ),
                 ],
               ),
+              Obx(() {
+                // grid view suggested bus stop horizontal scroll
+                if (isLogin.value && busStopList.isNotEmpty) {
+                  return StreamBuilder(
+                      stream: FirebaseServices.getFavoriteBusStop(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return const Center(
+                            child: Text('Something went wrong'),
+                          );
+                        }
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        if (snapshot.data == null || snapshot.data!.isEmpty) {
+                          return const SizedBox();
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            const Text(
+                              'Your favorite bus stop',
+                              style: TextStyle(
+                                fontSize: 20.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10.0),
+                            SizedBox(
+                              height: 100,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                physics: const BouncingScrollPhysics(),
+                                itemCount: snapshot.data!.length,
+                                itemBuilder: (context, index) {
+                                  final busStop = snapshot.data![index];
+
+                                  return InkWell(
+                                    onTap: () {
+                                      Get.dialog(BusInfoDialog(
+                                        busStopInLine: busStop,
+                                      ));
+                                    },
+                                    child: Container(
+                                      width: Get.width * 0.8,
+                                      margin: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(15),
+                                        color: Colors.white,
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            busStop.name,
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          Text(
+                                            busStop.address,
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        );
+                      });
+                }
+                return const SizedBox();
+              }),
+
               Card(
                 margin: const EdgeInsets.only(top: 20),
                 shape: RoundedRectangleBorder(
@@ -385,16 +489,38 @@ class HomeBody extends StatelessWidget {
                                     nearestBus = bus;
                                   }
                                 }
-                                final nearestDurationTime =
-                                    UnitUtils.formatDuration(nearestBus
-                                            .matrix!['duration'][
-                                        busStopList
+                                final nearestTime =
+                                    nearestBus.matrix!['duration'][busStopList
                                             .where((element) =>
                                                 element.line['line'].contains(
                                                     nearestBus.busStopLine))
                                             .toList()
                                             .indexOf(busStopList[
-                                                selectedBusStopIndex.value])]);
+                                                selectedBusStopIndex.value])] ??
+                                        0;
+                                final nearestDurationTime =
+                                    UnitUtils.formatDuration(nearestTime);
+
+                                AwesomeNotifications().createNotification(
+                                  content: NotificationContent(
+                                    id: 10,
+                                    channelKey: 'alerts',
+                                    title: 'Follow bus',
+                                    body:
+                                        'Bus is there in about ${nearestTime < 60 ? 'less than a minute' : nearestDurationTime}',
+                                    payload: {'uuid': 'uuid-test'},
+                                    backgroundColor: Colors.orange,
+                                    // progress: int.parse(nearestTime.toString()),
+                                  ),
+                                  actionButtons: [
+                                    NotificationActionButton(
+                                      key: 'UNFOLLOW',
+                                      label: 'Unfollow',
+                                      actionType: ActionType.DismissAction,
+                                      isDangerousOption: true,
+                                    )
+                                  ],
+                                );
 
                                 return Stack(
                                   alignment: Alignment.center,
@@ -452,100 +578,6 @@ class HomeBody extends StatelessWidget {
                                 );
                               });
                         }),
-
-                        // Obx(() {
-                        //   if (selectedBusStopIndex.value == -1) {
-                        //     return const Text(
-                        //       'You have not selected any bus stop',
-                        //       textAlign: TextAlign.center,
-                        //       style: TextStyle(
-                        //           fontSize: 20,
-                        //           fontWeight: FontWeight.bold,
-                        //           color: AppColors.blue),
-                        //     );
-                        //   }
-
-                        //   final BusStopModel busStop =
-                        //       busStopList[selectedBusStopIndex.value];
-
-                        //   final List<BusModel> buses = busList.where((bus) {
-                        //     final status = bus.status ?? false;
-                        //     return busStop.line['line']
-                        //             .contains(bus.busStopLine) &&
-                        //         status;
-                        //   }).toList();
-                        //   if (buses.isEmpty) {
-                        //     return const Text(
-                        //       'There is no bus at this bus stop',
-                        //       textAlign: TextAlign.center,
-                        //       style: TextStyle(
-                        //           fontSize: 20,
-                        //           fontWeight: FontWeight.bold,
-                        //           color: AppColors.blue),
-                        //     );
-                        //   }
-                        //   final nearestBus = buses.first;
-                        //   final busStopInLine = busStopList
-                        //       .where((element) => element.line['line']
-                        //           .contains(nearestBus.busStopLine))
-                        //       .toList();
-                        //   final nearestDurationTime = UnitUtils.formatDuration(
-                        //       nearestBus.matrix!['duration']
-                        //           [busStopInLine.indexOf(busStop)]);
-
-                        //   return Stack(
-                        //     alignment: Alignment.center,
-                        //     children: [
-                        //       Lottie.asset(
-                        //         'assets/lottie/moving-bus.json',
-                        //         fit: BoxFit.cover,
-                        //       ),
-                        //       InkWell(
-                        //         onTap: () {
-                        //           Get.to(() => BusDetailPage(
-                        //               busIndex: busList.indexOf(nearestBus)));
-                        //         },
-                        //         child: Container(
-                        //           decoration: BoxDecoration(
-                        //             borderRadius: BorderRadius.circular(50),
-                        //             color: Colors.orange.withOpacity(0.4),
-                        //           ),
-                        //           padding: const EdgeInsets.all(20),
-                        //           // radius: 50,
-                        //           // backgroundColor:
-                        //           //     Colors.transparent.withOpacity(0.4),
-                        //           // foregroundColor: Colors.white,
-
-                        //           child: Column(
-                        //             mainAxisAlignment: MainAxisAlignment.center,
-                        //             children: [
-                        //               const Text(
-                        //                 'Next bus arrive in about',
-                        //                 style: TextStyle(
-                        //                   fontSize: 12,
-                        //                 ),
-                        //               ),
-                        //               Text(
-                        //                 nearestDurationTime,
-                        //                 // 'test',
-                        //                 style: const TextStyle(
-                        //                     fontSize: 45,
-                        //                     fontWeight: FontWeight.bold,
-                        //                     color: AppColors.blue),
-                        //               ),
-                        //               const Text(
-                        //                 'View more',
-                        //                 style: TextStyle(
-                        //                     fontSize: 12,
-                        //                     color: AppColors.deepBLue),
-                        //               ),
-                        //             ],
-                        //           ),
-                        //         ),
-                        //       )
-                        //     ],
-                        //   );
-                        // }),
                         Column(
                           children: [
                             Container(
@@ -562,6 +594,8 @@ class HomeBody extends StatelessWidget {
                             ),
                             Obx(() => FilledButton(
                                 onPressed: () {
+                                  // NotificationController
+                                  //     .createNewNotification();
                                   Get.to(() => const BusStopListPage());
                                 },
                                 child: Text(selectedBusStopIndex.value == -1

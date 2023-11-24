@@ -2,16 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
 class CarouselSlidePart extends StatelessWidget {
-  const CarouselSlidePart({super.key});
-
+  CarouselSlidePart({Key? key, required this.item}) : super(key: key);
+  final List<String> item;
   @override
   Widget build(BuildContext context) {
-    final adsItem = [
-      'assets/images/ads1.png',
-      'assets/images/ads2.png',
-      'assets/images/ads3.png',
-      'assets/images/ads4.png',
-    ];
     return CarouselSlider(
       options: CarouselOptions(
         height: 150,
@@ -29,15 +23,16 @@ class CarouselSlidePart extends StatelessWidget {
         // onPageChanged: callbackFunction,
         scrollDirection: Axis.horizontal,
       ),
-      items: adsItem.map((imageUrl) {
+      items: item.map((imageUrl) {
         return Builder(
           builder: (BuildContext context) {
             return SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: Image.asset(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                ));
+              width: MediaQuery.of(context).size.width,
+              child: Image.asset(
+                imageUrl,
+                fit: BoxFit.cover,
+              ),
+            );
           },
         );
       }).toList(),

@@ -55,7 +55,11 @@ class HistoryPage extends StatelessWidget {
                           history.time.toDate().toString().substring(0, 16)),
                       title: Text(history.busStop.name),
                       subtitle: Text(history.busStop.address),
-                      onTap: () {},
+                      // onTap: () {
+                      //   Get.dialog(BusInfoDialog(
+                      //     busStopInLine: history.busStop,
+                      //   ));
+                      // },
                     );
                   },
                 );
