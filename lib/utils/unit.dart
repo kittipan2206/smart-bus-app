@@ -1,11 +1,16 @@
 class UnitUtils {
-  static String formatDuration(duration) {
+  static String formatDuration({duration, bool passed = false}) {
     String timeString = '';
+    const timeThreshold = 2.0;
     // convert time to string hours or minutes
-    if (duration < 60) {
+    if (passed) {
+      return 'The bus has passed.';
+    } else if (duration < 60) {
       timeString = 'Almost there';
     } else if (duration < 3600) {
-      timeString = '${(duration / 60).toStringAsFixed(0)} min';
+      final time = duration / 60;
+      timeString =
+          '${(time).toStringAsFixed(0)} - ${(time + timeThreshold).toStringAsFixed(0)} min';
     } else {
       timeString =
           '${(duration / 3600).toStringAsFixed(0)} hours ${(duration % 3600 / 60).toStringAsFixed(0)} min';

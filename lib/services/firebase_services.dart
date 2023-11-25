@@ -19,22 +19,19 @@ class FirebaseServices {
   static void updateFirebaseBusLocation(busDriverUID) async {
     logger.i('updateFirebaseBusLocation');
     // update bus location where field owner is busDriverUID
-    await FirebaseFirestore.instance
-        .collection('bus_data')
-        .where('owner', isEqualTo: busDriverUID)
-        .where('documentId', isEqualTo: selectedBusSharingId.value!.id)
-        .get()
-        .then((value) async {
-      for (final element in value.docs) {
-        await FirebaseFirestore.instance
-            .collection('bus_data')
-            .doc(element.id)
-            .update({
-          'location': GeoPoint(userLatLng.value.latitude,
-              userLatLng.value.longitude), // update bus location
-        });
-      }
-    });
+    try {
+      await FirebaseFirestore.instance
+          .collection('bus_data')
+          .doc(selectedBusSharingId.value!.id)
+          .update({
+        'location': GeoPoint(
+          userLatLng.value.latitude,
+          userLatLng.value.longitude,
+        ),
+      }).then((value) => logger.i('update location success'));
+    } catch (e) {
+      logger.i(e);
+    }
   }
 
   static Future<void> getBusList() async {

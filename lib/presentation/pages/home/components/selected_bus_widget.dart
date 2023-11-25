@@ -122,14 +122,39 @@ class SelectedBusStopWidget extends StatelessWidget {
                 ),
               ),
               ...busList.map((bus) {
-                final busStopInLine = busStopList
-                    .where((element) =>
-                        element.line['line'].contains(bus.busStopLine))
-                    .toList();
+                final int order =
+                    busStopList[selectedBusStopIndex.value].line['order'][
+                            busStopList[selectedBusStopIndex.value]
+                                .line['line']
+                                .indexOf(bus.busStopLine)] -
+                        1;
+                final nextBus = busStopList.firstWhereOrNull(
+                    (element) => element.id == bus.nextBusStop);
+                bool passed = false;
+                if (nextBus != null) {
+                  // return const SizedBox();
+                  final nextBusStopIndex = busStopList.indexOf(nextBus);
+                  // logger.d(indexOfNextBus);
+                  final nextStopOrder =
+                      busStopList[nextBusStopIndex].line['order'][
+                              busStopList[nextBusStopIndex]
+                                  .line['line']
+                                  .indexOf(bus.busStopLine)] -
+                          1;
+                  logger.d(nextStopOrder);
+                  // logger.d(nextStopIndex);
+
+                  if (bus.onward == true || bus.onward == null) {
+                    passed = order < nextStopOrder;
+                  } else {
+                    passed = order > nextStopOrder;
+                  }
+                }
+
                 final durationTime = bus.matrix != null
-                    ? UnitUtils.formatDuration(bus.matrix!['duration'][
-                        busStopInLine
-                            .indexOf(busStopList[selectedBusStopIndex.value])])
+                    ? UnitUtils.formatDuration(
+                        duration: bus.matrix!['duration'][order],
+                        passed: passed)
                     : 'N/A';
                 return ListTile(
                   onTap: () {

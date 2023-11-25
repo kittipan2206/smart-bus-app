@@ -26,6 +26,7 @@ class HomeBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // final BusController busController = Get.find();
     final List<String> names = [
       'See all buses',
       'Journey plan',
@@ -236,6 +237,7 @@ class HomeBody extends StatelessWidget {
                                   busId: selectedBusSharingId.value!.id!,
                                   status: true);
                               isStreamBusLocation.value = true;
+                              logger.i('start stream bus location');
                             },
                             child: const Text('Share bus location'),
                           ),
@@ -489,17 +491,46 @@ class HomeBody extends StatelessWidget {
                                     nearestBus = bus;
                                   }
                                 }
+                                final int order = busStopList[
+                                                selectedBusStopIndex.value]
+                                            .line['order'][
+                                        busStopList[selectedBusStopIndex.value]
+                                            .line['line']
+                                            .indexOf(nearestBus.busStopLine)] -
+                                    1;
+                                final nextBus = busStopList.firstWhereOrNull(
+                                    (element) =>
+                                        element.id == nearestBus.nextBusStop);
+                                bool passed = false;
+                                if (nextBus != null) {
+                                  final nextBusStopIndex =
+                                      busStopList.indexOf(nextBus);
+                                  // logger.d(indexOfNextBus);
+                                  final nextStopOrder =
+                                      busStopList[nextBusStopIndex]
+                                                  .line['order'][
+                                              busStopList[nextBusStopIndex]
+                                                  .line['line']
+                                                  .indexOf(
+                                                      nearestBus.busStopLine)] -
+                                          1;
+                                  logger.d(nextStopOrder);
+                                  // logger.d(nextStopIndex);
+
+                                  if (nearestBus.onward == true ||
+                                      nearestBus.onward == null) {
+                                    passed = order < nextStopOrder;
+                                  } else {
+                                    passed = order > nextStopOrder;
+                                  }
+                                }
+
                                 final nearestTime =
-                                    nearestBus.matrix!['duration'][busStopList
-                                            .where((element) =>
-                                                element.line['line'].contains(
-                                                    nearestBus.busStopLine))
-                                            .toList()
-                                            .indexOf(busStopList[
-                                                selectedBusStopIndex.value])] ??
-                                        0;
+                                    nearestBus.matrix!['duration'][order] ?? 0;
                                 final nearestDurationTime =
-                                    UnitUtils.formatDuration(nearestTime);
+                                    UnitUtils.formatDuration(
+                                        duration: passed ? 0 : nearestTime,
+                                        passed: passed);
 
                                 AwesomeNotifications().createNotification(
                                   content: NotificationContent(
@@ -560,8 +591,9 @@ class HomeBody extends StatelessWidget {
                                             Text(
                                               nearestDurationTime,
                                               // 'test',
+                                              textAlign: TextAlign.center,
                                               style: const TextStyle(
-                                                  fontSize: 45,
+                                                  fontSize: 30,
                                                   fontWeight: FontWeight.bold,
                                                   color: AppColors.blue),
                                             ),

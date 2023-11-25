@@ -80,6 +80,7 @@ Future<void> getCurrentLocation() async {
       userLatLng.value =
           LatLng(_locationData.latitude!, _locationData.longitude!);
       if (isStreamBusLocation.value) {
+        logger.i('update location');
         FirebaseServices.updateFirebaseBusLocation(user.value!.uid);
         checkIsNearBusStop(distanceInMetersThreshold);
       }
