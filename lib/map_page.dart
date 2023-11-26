@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:smart_bus/common/style/app_colors.dart';
 import 'package:smart_bus/globals.dart';
@@ -26,6 +27,8 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
+  RxString followBusId = "".obs;
+
   final _mapMarkerSC = StreamController<List<Marker>>();
 
   Stream<List<Marker>> get mapMarkerStream => _mapMarkerSC.stream;
@@ -34,6 +37,20 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     FirebaseServices.getStreamBusData().listen((busData) {
+      if (followBusId.value != "") {
+        final bus =
+            busData.firstWhere((element) => element.id == followBusId.value);
+        _controller.future.then((value) {
+          value.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: LatLng(bus.location!.latitude, bus.location!.longitude),
+                zoom: 15,
+              ),
+            ),
+          );
+        });
+      }
       updateMarkers(busData);
     });
   }
@@ -59,7 +76,34 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               ),
               context: context,
               builder: (context) {
-                return BusDetailPage(bus: bus);
+                return Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    // follow bus button
+                    Obx(() => ElevatedButton(
+                        onPressed: () {
+                          if (followBusId.value == bus.id) {
+                            followBusId.value = "";
+                            return;
+                          }
+                          followBusId.value = bus.id!;
+                          Get.back();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: followBusId.value == bus.id
+                              ? AppColors.red
+                              : AppColors.orange,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        child: followBusId.value == bus.id
+                            ? const Text('Unfollow')
+                            : const Text('Follow'))),
+                    Expanded(child: BusDetailPage(bus: bus)),
+                  ],
+                );
               },
             );
           },

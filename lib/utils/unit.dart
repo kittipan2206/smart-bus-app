@@ -5,8 +5,10 @@ class UnitUtils {
     // convert time to string hours or minutes
     if (passed) {
       return 'Passed';
-    } else if (duration < 60) {
+    } else if (duration < 30) {
       timeString = 'Almost there';
+    } else if (duration < 60) {
+      timeString = '1 min';
     } else if (duration < 3600) {
       final time = duration / 60;
       timeString =
