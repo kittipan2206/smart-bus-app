@@ -29,6 +29,15 @@ class HomeBottomNav extends StatelessWidget {
             label: 'Home'.tr,
           ),
           BottomNavigationBarItem(
+            icon: const Icon(
+              CupertinoIcons.map,
+            ),
+            activeIcon: const Icon(
+              CupertinoIcons.map_fill,
+            ),
+            label: 'Map'.tr,
+          ),
+          BottomNavigationBarItem(
             // SOS icon
             icon: const Icon(
               CupertinoIcons.settings,

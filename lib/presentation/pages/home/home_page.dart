@@ -1,4 +1,5 @@
 import 'package:smart_bus/globals.dart';
+import 'package:smart_bus/map_page.dart';
 import 'package:smart_bus/presentation/pages/authen/login_page.dart';
 import 'package:smart_bus/presentation/pages/home/components/button.dart';
 import 'package:smart_bus/presentation/pages/home/components/home_bottom_nav.dart';
@@ -44,6 +45,7 @@ class HomePage extends StatelessWidget {
               index: homeController.tabIndex.value,
               children: const [
                 HomeBody(),
+                MapScreen(),
                 SettingPage(),
               ],
             ),

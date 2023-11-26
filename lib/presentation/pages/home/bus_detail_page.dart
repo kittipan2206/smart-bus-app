@@ -8,10 +8,8 @@ import 'package:smart_bus/model/review_model.dart';
 import 'package:smart_bus/services/firebase_services.dart';
 
 class BusDetailPage extends StatelessWidget {
-  BusDetailPage({Key? key, required this.bus}) : super(key: key);
+  const BusDetailPage({Key? key, required this.bus}) : super(key: key);
   final BusModel bus;
-
-  final RxBool isFavorite = false.obs;
 
   @override
   Widget build(BuildContext context) {

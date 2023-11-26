@@ -93,9 +93,6 @@ class HomeBody extends StatelessWidget {
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold),
                                   ),
-                                  // role
-                                  // if (userInfo.data() != null)
-
                                   Text(
                                     "Role: ${userInfo['roles'] ?? 'Guest'}",
                                   ),

@@ -26,7 +26,6 @@ Future<void> main() async {
     app: const App(),
   );
   await NotificationController.initializeLocalNotifications();
-  await NotificationController.initializeIsolateReceivePort();
 
   runApp(runuableApp);
 }

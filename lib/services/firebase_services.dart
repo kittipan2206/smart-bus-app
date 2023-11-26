@@ -62,9 +62,12 @@ class FirebaseServices {
   }
 
   static Future<void> updateBusNextStop(
-      {required String busId, required String nextStop}) async {
+      {required String busId,
+      required String nextStop,
+      required bool onward}) async {
     FirebaseFirestore.instance.collection('bus_data').doc(busId).update({
       'nextBusStop': nextStop,
+      'onward': onward,
     });
   }
 

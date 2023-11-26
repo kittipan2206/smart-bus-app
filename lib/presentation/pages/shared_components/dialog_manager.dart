@@ -40,8 +40,13 @@ class DialogManager {
     if (Get.isDialogOpen == true || selectedBusSharingId.value == null) {
       return;
     }
+    int order = 0;
+    logger.i(order);
 
     if (previousBusStop != null) {
+      order = busStopList[busStopList.indexOf(previousBusStop!)].line['order'][
+          previousBusStop!.line['line']
+              .indexOf(selectedBusSharingId.value!.busStopLine)];
       if (busStop!.id == previousBusStop!.id) {
         return;
       }
@@ -61,6 +66,7 @@ class DialogManager {
 
     busStopInLine.sortBy((item) => item.line['order']
         [item.line['line'].indexOf(selectedBusSharingId.value!.busStopLine)]);
+
     List<BusStopModel> nextBusStopList = [];
     if (busStop != null) {
       for (int index = 0; index < busStopInLine.length; index++) {
@@ -116,9 +122,18 @@ class DialogManager {
                   child: ListTile(
                     onTap: () {
                       previousBusStop = busStop;
+                      final int nextStopOrder =
+                          busStopList[busStopList.indexOf(busStop)]
+                                  .line['order'][
+                              busStopList[busStopList.indexOf(busStop)]
+                                  .line['line']
+                                  .indexOf(
+                                      selectedBusSharingId.value!.busStopLine)];
+                      logger.i("next stop order: $nextStopOrder order: $order");
                       FirebaseServices.updateBusNextStop(
                           busId: selectedBusSharingId.value!.id!,
-                          nextStop: nextBusStopList[index].id);
+                          nextStop: nextBusStopList[index].id,
+                          onward: nextStopOrder > order ? true : false);
                       FlutterRingtonePlayer.stop();
                       Get.back();
                     },
