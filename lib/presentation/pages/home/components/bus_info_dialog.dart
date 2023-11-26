@@ -132,6 +132,9 @@ class BusInfoDialog extends StatelessWidget {
                       style: const TextStyle(color: Colors.white),
                     )),
               ),
+              const SizedBox(
+                height: 10,
+              ),
               FilledButton(
                 onPressed: () {
                   MapsLauncher.launchCoordinates(

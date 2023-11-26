@@ -346,7 +346,7 @@ class HomeBody extends StatelessWidget {
                                       ));
                                     },
                                     child: Container(
-                                      width: Get.width * 0.8,
+                                      padding: const EdgeInsets.all(10),
                                       margin: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(15),
