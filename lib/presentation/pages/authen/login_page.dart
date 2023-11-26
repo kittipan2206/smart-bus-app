@@ -319,6 +319,9 @@ class _LoginPageState extends State<LoginPage> {
                             },
                             child: const Text('Register'),
                           ),
+                          // (GoogleSignInPlatform.instance
+                          //         as web.GoogleSignInPlugin)
+                          //     .renderButton(),
                           ElevatedButton(
                               style: ButtonStyle(
                                 // min size

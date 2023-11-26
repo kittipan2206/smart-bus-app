@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -248,16 +249,23 @@ class FirebaseServices {
   static Future loginWithGoogle() async {
     try {
       GoogleSignIn googleSignIn = GoogleSignIn(
+        clientId:
+            "289143881277-0keep21o9000575kmjajve3716u4vto1.apps.googleusercontent.com",
         scopes: [
           'https://www.googleapis.com/auth/contacts.readonly',
         ],
       );
-      GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      GoogleSignInAuthentication? userAuth = await googleUser?.authentication;
+      GoogleSignInAccount? googleUser = kIsWeb
+          ? await (googleSignIn.signInSilently())
+          : await (googleSignIn.signIn());
+      if (kIsWeb && googleUser == null) {
+        googleUser = await (googleSignIn.signIn());
+      }
+      GoogleSignInAuthentication userAuth = await googleUser!.authentication;
       final auth = FirebaseAuth.instance;
 
       await auth.signInWithCredential(GoogleAuthProvider.credential(
-          idToken: userAuth!.idToken, accessToken: userAuth.accessToken));
+          idToken: userAuth.idToken, accessToken: userAuth.accessToken));
       Fluttertoast.showToast(msg: 'Login success');
       user.value = auth.currentUser;
       // if dost not have user info

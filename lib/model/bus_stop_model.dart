@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:smart_bus/globals.dart';
 
 class BusStopModel {
   // don't use same id for two buses

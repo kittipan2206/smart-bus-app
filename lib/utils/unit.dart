@@ -4,7 +4,7 @@ class UnitUtils {
     const timeThreshold = 2.0;
     // convert time to string hours or minutes
     if (passed) {
-      return 'The bus has passed.';
+      return 'Passed';
     } else if (duration < 60) {
       timeString = 'Almost there';
     } else if (duration < 3600) {

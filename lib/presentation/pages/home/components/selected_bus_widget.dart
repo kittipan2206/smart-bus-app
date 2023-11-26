@@ -141,8 +141,6 @@ class SelectedBusStopWidget extends StatelessWidget {
                                   .line['line']
                                   .indexOf(bus.busStopLine)] -
                           1;
-                  logger.d(nextStopOrder);
-                  // logger.d(nextStopIndex);
 
                   if (bus.onward == true || bus.onward == null) {
                     passed = order < nextStopOrder;
@@ -162,7 +160,6 @@ class SelectedBusStopWidget extends StatelessWidget {
                   },
                   trailing: Text(
                     bus.status ?? false ? durationTime : 'N/A',
-                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 16.0,
                       color:
