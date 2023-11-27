@@ -9,7 +9,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:smart_bus/common/style/app_colors.dart';
 import 'package:smart_bus/globals.dart';
 import 'package:smart_bus/model/bus_model.dart';
+import 'package:smart_bus/model/bus_stop_model.dart';
 import 'package:smart_bus/presentation/pages/home/bus_detail_page.dart';
+import 'package:smart_bus/presentation/pages/home/components/bus_info_dialog.dart';
 import 'package:smart_bus/services/firebase_services.dart';
 
 class MapScreen extends StatefulWidget {
@@ -23,6 +25,7 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   final List<Marker> _markers = <Marker>[];
+  final List<Marker> _busStopMarkers = <Marker>[];
 
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
@@ -36,26 +39,50 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    // stream getX variable
+    busStopList.listen((busStopData) {
+      updateBusStopMarkers(busStopData);
+    });
+    // updateBusStopMarkers(busStopList);
     FirebaseServices.getStreamBusData().listen((busData) {
       if (followBusId.value != "") {
         final bus =
             busData.firstWhere((element) => element.id == followBusId.value);
         _controller.future.then((value) {
           value.animateCamera(
-            CameraUpdate.newCameraPosition(
-              CameraPosition(
-                target: LatLng(bus.location!.latitude, bus.location!.longitude),
-                zoom: 15,
-              ),
-            ),
+            CameraUpdate.newLatLng(
+                LatLng(bus.location!.latitude, bus.location!.longitude)),
           );
         });
       }
-      updateMarkers(busData);
+      updateBusMarkers(busData);
     });
   }
 
-  void updateMarkers(List<BusModel> busData) async {
+  void updateBusStopMarkers(List<BusStopModel> busStopData) async {
+    _busStopMarkers.clear();
+    try {
+      for (var busStop in busStopData) {
+        final marker = Marker(
+          markerId: MarkerId(busStop.id),
+          position:
+              LatLng(busStop.location.latitude, busStop.location.longitude),
+          icon: await getCustomIconBusStop(),
+          onTap: () {
+            // Get.to(() => BusDetailPage(bus: bus));
+            Get.dialog(BusInfoDialog(busStopInLine: busStop));
+          },
+        );
+        _busStopMarkers.add(marker);
+      }
+
+      setState(() {}); // Trigger a rebuild with new markers
+    } catch (e) {
+      logger.e(e);
+    }
+  }
+
+  void updateBusMarkers(List<BusModel> busData) async {
     _markers.clear();
     for (var bus in busData) {
       if (bus.location != null) {
@@ -123,6 +150,11 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
         await getBytesFromAsset('assets/images/bus_marker_grey.png', 120));
   }
 
+  Future<BitmapDescriptor> getCustomIconBusStop() async {
+    return BitmapDescriptor.fromBytes(
+        await getBytesFromAsset('assets/images/bus-stop_marker.png', 160));
+  }
+
   @override
   void dispose() {
     _mapMarkerSC.close();
@@ -132,6 +164,68 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          // stop follow bus
+          Obx(() => followBusId.value != ""
+              ? FloatingActionButton.extended(
+                  onPressed: () {
+                    followBusId.value = "";
+                  },
+                  // rectangular button with rounded corners
+                  isExtended: true,
+                  label: const Text('Stop follow bus'),
+                  backgroundColor: AppColors.red,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                )
+              : const SizedBox()),
+          const SizedBox(height: 10),
+
+          FloatingActionButton.extended(
+              onPressed: () {
+                if (selectedBusStopIndex.value == -1) {
+                  Fluttertoast.showToast(
+                    msg: "Please select bus stop",
+                  );
+                  return;
+                }
+                _controller.future.then((value) {
+                  value.animateCamera(
+                    CameraUpdate.newLatLng(
+                      LatLng(
+                          busStopList[selectedBusStopIndex.value]
+                              .location
+                              .latitude,
+                          busStopList[selectedBusStopIndex.value]
+                              .location
+                              .longitude),
+                    ),
+                  );
+                });
+              },
+              // rectangular button with rounded corners
+              isExtended: true,
+              label: const Text('Selected bus stop')),
+          const SizedBox(height: 10),
+          FloatingActionButton.extended(
+              onPressed: () {
+                _controller.future.then((value) {
+                  value.animateCamera(
+                    CameraUpdate.newLatLng(LatLng(
+                        userLatLng.value.latitude, userLatLng.value.longitude)),
+                  );
+                });
+              },
+              // rectangular button with rounded corners
+              isExtended: true,
+              label: const Text('My location')),
+        ],
+      ),
       body: Stack(
         children: [
           GoogleMap(
@@ -140,7 +234,10 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               target: LatLng(7.9059983, 98.3688283),
               zoom: 14.4746,
             ),
-            markers: Set<Marker>.from(_markers),
+            markers: {
+              ..._markers,
+              ..._busStopMarkers,
+            },
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
               _controller.future.then(
@@ -156,100 +253,121 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             myLocationEnabled: true,
           ),
           // list horizontal stream bus
-          StreamBuilder<List<BusModel>>(
-            stream: FirebaseServices.getStreamBusData(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return SizedBox(
-                  height: 150,
-                  child: ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          if (snapshot.data![index].location == null) {
-                            Fluttertoast.showToast(
-                              msg: "Location not found",
-                            );
-                            return;
-                          }
-                          _controller.future.then((value) {
-                            value.animateCamera(
-                              CameraUpdate.newCameraPosition(
-                                CameraPosition(
-                                  target: LatLng(
-                                      snapshot.data![index].location!.latitude,
-                                      snapshot
-                                          .data![index].location!.longitude),
-                                  zoom: 15,
-                                ),
-                              ),
-                            );
-                          });
-                        },
-                        child: Container(
-                          width: 200,
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.grey.withOpacity(0.5),
-                                spreadRadius: 1,
-                                blurRadius: 5,
-                                offset: const Offset(
-                                    0, 3), // changes position of shadow
-                              ),
-                            ],
-                          ),
-                          margin: const EdgeInsets.all(10),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                snapshot.data![index].name ?? "unknow",
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                snapshot.data![index].licensePlate!,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                snapshot.data![index].status ?? false
-                                    ? "Active"
-                                    : "Inactive",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: snapshot.data![index].status ?? false
-                                      ? AppColors.orange
-                                      : AppColors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+
+          Column(
+            children: [
+              const SizedBox(height: 50),
+              ExpansionTile(
+                  title: const Text(
+                    'Show all bus',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: AppColors.orange),
                   ),
-                );
-              }
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            },
+                  children: [
+                    StreamBuilder<List<BusModel>>(
+                      stream: FirebaseServices.getStreamBusData(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return SizedBox(
+                            height: 150,
+                            child: ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              scrollDirection: Axis.horizontal,
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (context, index) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    if (snapshot.data![index].location ==
+                                        null) {
+                                      Fluttertoast.showToast(
+                                        msg: "Location not found",
+                                      );
+                                      return;
+                                    }
+                                    _controller.future.then((value) {
+                                      value.animateCamera(
+                                        CameraUpdate.newCameraPosition(
+                                          CameraPosition(
+                                            target: LatLng(
+                                                snapshot.data![index].location!
+                                                    .latitude,
+                                                snapshot.data![index].location!
+                                                    .longitude),
+                                            zoom: 15,
+                                          ),
+                                        ),
+                                      );
+                                    });
+                                  },
+                                  child: Container(
+                                    width: 200,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.white,
+                                      borderRadius: BorderRadius.circular(10),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color:
+                                              AppColors.grey.withOpacity(0.5),
+                                          spreadRadius: 1,
+                                          blurRadius: 5,
+                                          offset: const Offset(0,
+                                              3), // changes position of shadow
+                                        ),
+                                      ],
+                                    ),
+                                    margin: const EdgeInsets.all(10),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          snapshot.data![index].name ??
+                                              "unknow",
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          snapshot.data![index].licensePlate!,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          snapshot.data![index].status ?? false
+                                              ? "Active"
+                                              : "Inactive",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color:
+                                                snapshot.data![index].status ??
+                                                        false
+                                                    ? AppColors.orange
+                                                    : AppColors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        }
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      },
+                    )
+                  ]),
+            ],
           ),
         ],
       ),
