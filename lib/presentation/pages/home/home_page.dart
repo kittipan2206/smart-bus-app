@@ -46,7 +46,7 @@ class HomePage extends StatelessWidget {
                                   onPressed: () async {
                                     //open url
                                     final uri = Uri.parse(
-                                        "https://drive.google.com/file/d/1YZhHHaYKrijJs9XGwlpRjpllfR_sUA9O/view?usp=sharing");
+                                        "https://drive.google.com/file/d/1UXqehtLvl0KKauTkg_NfQKLa5qc3Zaz8/view?usp=sharing");
                                     // if (await canLaunchUrl(uri)) {
                                     try {
                                       await launchUrl(uri);
