@@ -309,7 +309,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                               .set({
                                             'owner': value.user!.uid,
                                             'bus_stop_line':
-                                                int.parse(bus.busStopLine),
+                                                num.parse(bus.busStopLine),
                                             'name': bus.name,
                                             'LP': bus.licensePlate,
                                           });
@@ -579,7 +579,8 @@ void addBusDialog({BusModel? bus, required List<BusModel> rawBusList}) {
                           .update({
                         'name': busNameController.text,
                         'LP': licensePlateController.text,
-                        'bus_stop_line': int.parse(busStopLine),
+                        'bus_stop_line':
+                            num.parse(busStopLine), // int or double busStopLine
                       });
                     } else {
                       rawBusList.add(BusModel(
@@ -594,7 +595,7 @@ void addBusDialog({BusModel? bus, required List<BusModel> rawBusList}) {
                       FirebaseFirestore.instance.collection('bus_data').add({
                         'name': busNameController.text,
                         'LP': licensePlateController.text,
-                        'bus_stop_line': int.parse(busStopLine),
+                        'bus_stop_line': num.parse(busStopLine),
                         'owner': user.value!.uid,
                       }).then((value) {
                         // update document id
