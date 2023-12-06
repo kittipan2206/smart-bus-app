@@ -3,6 +3,7 @@ class UnitUtils {
     String timeString = '';
     const timeThreshold = 2.0;
     // convert time to string hours or minutes
+    // return duration.toString();
     if (passed) {
       return 'Passed';
     } else if (duration < 30) {

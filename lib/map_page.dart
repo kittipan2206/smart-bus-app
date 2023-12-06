@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -143,16 +144,16 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
   Future<BitmapDescriptor> getCustomIcon({required bool active}) async {
     if (active) {
-      return BitmapDescriptor.fromBytes(
-          await getBytesFromAsset('assets/images/bus_marker.png', 150));
+      return BitmapDescriptor.fromBytes(await getBytesFromAsset(
+          'assets/images/bus_marker.png', kIsWeb ? 100 : 150));
     }
-    return BitmapDescriptor.fromBytes(
-        await getBytesFromAsset('assets/images/bus_marker_grey.png', 120));
+    return BitmapDescriptor.fromBytes(await getBytesFromAsset(
+        'assets/images/bus_marker_grey.png', kIsWeb ? 90 : 120));
   }
 
   Future<BitmapDescriptor> getCustomIconBusStop() async {
-    return BitmapDescriptor.fromBytes(
-        await getBytesFromAsset('assets/images/bus-stop_marker.png', 160));
+    return BitmapDescriptor.fromBytes(await getBytesFromAsset(
+        'assets/images/bus-stop_marker.png', kIsWeb ? 120 : 160));
   }
 
   @override
