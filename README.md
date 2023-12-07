@@ -1,6 +1,7 @@
 # Smart Bus App
 
 This is a Flutter app for managing bus routes and schedules.
+this is a nodeJS for getting the duration and distance from the Openrouteservice API: https://github.com/kittipan2206/smart-bus-node
 
 ## Getting Started
 
